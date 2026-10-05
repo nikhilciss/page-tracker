@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Universal — Playground</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/tracker.js" defer></script>
+  </head>
+  <body class="demo-body">
+    <header class="demo-header">
+      <a class="brand" href="/"
+        ><span class="brand-symbol">u</span> universal<span class="brand-dot">•</span></a
+      ><a class="button" href="/">← Session library</a>
+    </header>
+    <main class="demo-main">
+      <div class="eyebrow">INTEGRATION PLAYGROUND</div>
+      <h1>One script. The whole page.</h1>
+      <p class="demo-intro">
+        Recording starts automatically on this page. Interact, submit, or follow a link to save a
+        page video. No form attributes are required.
+      </p>
+      <div class="video-actions">
+        <a class="button" href="/page-demo.html">Try a page with no form</a>
+        <a class="button" href="/complete.html">Continue without a form →</a>
+        <button class="button" id="reload-demo" type="button">Reload this page</button>
+      </div>
+      <script src="/demo.js" defer></script>
+      <div class="demo-grid">
+        <form id="contact-demo" action="/demo/complete" method="post" class="demo-form">
+          <div class="form-heading">
+            <span class="pill">LIVE DEMO</span>
+            <h2>Let’s build something better.</h2>
+            <p>Tell us a little about your next project.</p>
+          </div>
+          <div class="form-row">
+            <label
+              >First name<input
+                name="first_name"
+                placeholder="Alex"
+                required
+                maxlength="100"
+                autocomplete="given-name" /></label
+            ><label
+              >Last name<input
+                name="last_name"
+                placeholder="Morgan"
+                required
+                maxlength="100"
+                autocomplete="family-name"
+            /></label>
+          </div>
+          <label
+            >Work email<input
+              name="email"
+              type="email"
+              placeholder="alex@company.com"
+              required
+              autocomplete="email" /></label
+          ><label
+            >What are you working on?<select name="project_type" required>
+              <option value="">Select a project type</option>
+              <option>Website experience</option>
+              <option>Customer onboarding</option>
+              <option>Product research</option>
+              <option>Something else</option>
+            </select></label
+          ><label
+            >A little more detail<textarea
+              name="message"
+              rows="4"
+              placeholder="What would a better experience look like?"
+              maxlength="2000"
+            ></textarea></label
+          ><label
+            >Private reference <span class="optional">· always masked</span
+            ><input
+              name="private_reference"
+              data-recording-mask
+              type="text"
+              placeholder="This value won’t appear in playback" /></label
+          ><label class="checkbox-label"
+            ><input name="follow_up" type="checkbox" value="yes" /> You can follow up about this
+            project.</label
+          ><button class="button primary" type="submit" name="intent" value="contact">
+            Send inquiry <span>→</span>
+          </button>
+          <p class="form-footnote">Demo only. Submissions are stored locally for playback.</p>
+        </form>
+        <aside class="demo-explanation">
+          <span class="eyebrow">WHAT HAPPENS HERE</span>
+          <h2>Small script.<br />Useful context.</h2>
+          <article>
+            <span>01</span>
+            <div>
+              <h3>Interact naturally</h3>
+              <p>
+                Mouse movement, clicks, scrolling, field changes, and layout updates build a page
+                timeline.
+              </p>
+            </div>
+          </article>
+          <article>
+            <span>02</span>
+            <div>
+              <h3>Leave to save</h3>
+              <p>
+                Temporary checkpoints protect your recording. Submitting, following a link, or using
+                the page reload button finalizes the page video.
+              </p>
+            </div>
+          </article>
+          <article>
+            <span>03</span>
+            <div>
+              <h3>Replay the journey</h3>
+              <p>Open the session library and choose Video to watch the complete page session.</p>
+            </div>
+          </article>
+          <div class="privacy-note">
+            <strong>Private by design</strong>
+            <p>
+              Passwords, payment fields, and fields marked for masking are redacted before capture.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>

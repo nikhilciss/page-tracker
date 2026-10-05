@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Universal — Page recording without a form</title>
+    <script src="/tracker.js" defer></script>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/page-demo.js" defer></script>
+  </head>
+  <body class="demo-body">
+    <header class="demo-header">
+      <a class="brand" href="/"><span class="brand-symbol">u</span> universal</a
+      ><a class="button" href="/">Session library →</a>
+    </header>
+    <main class="demo-main">
+      <div class="eyebrow">NO FORM. NO TRACKING ATTRIBUTES.</div>
+      <h1>This entire page is recording.</h1>
+      <p>
+        Only the tracker script is needed. Try the controls, then continue or click the page reload
+        button to save a video.
+      </p>
+      <section class="demo-form">
+        <label
+          >Page notes<input name="page_notes" placeholder="Type something outside a form"
+        /></label>
+        <button class="button" id="change-page" type="button">Change page content</button>
+        <p id="page-result" aria-live="polite">No changes yet.</p>
+        <div class="video-actions">
+          <a class="button primary" id="continue-page" href="/complete.html">Continue →</a>
+          <button class="button" id="native-reload" type="button">
+            Reload using ordinary JavaScript
+          </button>
+        </div>
+      </section>
+      <p>
+        This example uses a normal link and an ordinary location.reload() handler. The tracker saves
+        in the background; browser-imposed exit limits can leave only the latest checkpoint. Browser
+        refresh/F5 does not save a video.
+      </p>
+    </main>
+  </body>
+</html>

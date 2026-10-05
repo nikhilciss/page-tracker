@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Session overview · PageTracker</title>
+    <link rel="stylesheet" href="/account.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="/">Workspace / Overview</a>
+      <div class="actions">
+        <span class="avatar" aria-hidden="true">◉</span><span id="account"></span
+        ><button id="logout" class="secondary">Log out</button>
+      </div>
+    </header>
+    <main>
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">YOUR WORKSPACE AT A GLANCE</span>
+          <h1>Session overview</h1>
+          <p>Understand the journey behind every interaction.</p>
+        </div>
+        <a class="button" href="/profile.html">＋ Connect your website</a>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-top">Total sessions<span class="stat-icon">▦</span></div>
+          <strong id="stat-total">—</strong><small>All recorded visits in your workspace</small>
+        </div>
+        <div class="stat">
+          <div class="stat-top">Average duration<span class="stat-icon">◷</span></div>
+          <strong id="stat-duration">—</strong><small>Time spent in a recorded session</small>
+        </div>
+        <div class="stat">
+          <div class="stat-top">Guest sessions<span class="stat-icon">♙</span></div>
+          <strong id="stat-guests">—</strong><small>Visits without a provided user identity</small>
+        </div>
+      </div>
+      <div class="notice">
+        <span class="stat-icon" aria-hidden="true">⌘</span>
+        <div>
+          <strong>One workspace. A clearer picture.</strong>
+          <p>
+            Your registered website: <span id="origin"></span>. Manage your profile and installation
+            in your profile.
+          </p>
+        </div>
+        <a href="/profile.html" class="button secondary">Open profile ↗</a>
+      </div>
+      <p id="feedback" role="status"></p>
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2 id="count">Recorded sessions</h2>
+            <p>Open a session to explore its activity and replay.</p>
+          </div>
+          <button id="refresh" class="secondary">↻ Refresh</button>
+        </div>
+        <div id="empty-state" class="empty" hidden>
+          <span class="empty-symbol">▤</span>
+          <h3>Your first session starts here</h3>
+          <p>
+            Connect your website from Profile &amp; integration, then complete a page action to see
+            its recording here.
+          </p>
+          <a href="/profile.html">Set up your integration →</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>Visitor</th>
+                <th>Page</th>
+                <th>Duration</th>
+                <th>Recorded</th>
+              </tr>
+            </thead>
+            <tbody id="recordings"></tbody>
+          </table>
+        </div>
+        <div class="actions pagination">
+          <span id="page-label"></span><button id="previous" class="secondary">← Previous</button
+          ><button id="next" class="secondary">Next →</button>
+        </div>
+      </section>
+      <p class="muted">
+        Recordings are private to your workspace. Capture limits may affect playback duration.
+      </p>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Companies · Master Admin</title>
+    <link rel="stylesheet" href="/account.css" />
+    <script type="module" src="/master.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="/master/admin">Master Admin · Page Tracker</a>
+      <div class="actions">
+        <span id="account"></span><button id="logout" class="secondary">Log out</button>
+      </div>
+    </header>
+    <main>
+      <a href="/master/admin" id="back" hidden>← All companies</a>
+      <span class="eyebrow">ADMINISTRATION</span>
+      <h1 id="title">Registered companies</h1>
+      <p id="description">Choose a company to view its recorded sessions.</p>
+      <p id="feedback" role="status"></p>
+      <section class="card">
+        <button id="refresh" class="secondary">Refresh</button>
+        <p id="empty" hidden>No results yet.</p>
+        <div class="table-wrap">
+          <table>
+            <thead id="head"></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="actions pagination">
+          <button id="previous" class="secondary">Previous</button><span id="page-label"></span
+          ><button id="next" class="secondary">Next</button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Log in · Page Tracker</title>
+    <link rel="stylesheet" href="/account.css" />
+    <script src="/login.js" defer></script>
+  </head>
+  <body class="auth-layout">
+    <aside class="auth-art">
+      <a class="brand" href="/"><span class="brand-mark">◈</span>PageTracker</a>
+      <span class="eyebrow">SESSION INTELLIGENCE</span>
+      <h2>See the journey.<br />Understand the experience.</h2>
+      <p>Bring page activity, session context and video playback into one workspace.</p>
+      <svg viewBox="0 0 400 210" role="img" aria-label="Illustration of a session timeline">
+        <rect x="8" y="8" width="384" height="192" rx="14" fill="#243657" stroke="#5872a3" />
+        <circle cx="27" cy="27" r="4" fill="#a9bbdf" />
+        <circle cx="42" cy="27" r="4" fill="#708dc0" />
+        <rect x="26" y="48" width="80" height="132" rx="7" fill="#182943" />
+        <rect x="120" y="48" width="252" height="82" rx="8" fill="#364d76" />
+        <path d="M228 70l25 19-25 19z" fill="#c3ccff" />
+        <path d="M124 158h242" stroke="#6f86b1" stroke-width="4" />
+        <circle cx="155" cy="158" r="7" fill="#99a7ff" />
+        <circle cx="220" cy="158" r="7" fill="#99a7ff" />
+        <circle cx="319" cy="158" r="7" fill="#99a7ff" />
+        <path d="M40 70h48M40 88h35M40 106h42" stroke="#627daa" stroke-width="5" />
+      </svg>
+      <footer>YOUR WORKSPACE. YOUR RECORDINGS. YOUR INFRASTRUCTURE.</footer>
+    </aside>
+    <div class="auth-form-wrap">
+      <main class="auth card">
+        <div class="eyebrow">PAGETRACKER WORKSPACE</div>
+        <h1 id="heading">Welcome back</h1>
+        <p id="intro">Log in to see your recorded sessions.</p>
+        <form id="login-form">
+          <div id="signup-fields" hidden>
+            <label for="name">Name</label
+            ><input id="name" name="name" maxlength="160" autocomplete="name" /><label for="domain"
+              >Company domain</label
+            ><input
+              id="domain"
+              name="company_domain"
+              maxlength="255"
+              placeholder="https://company.com"
+            />
+            <p class="muted">
+              Use the exact website origin, including http/https and any port. No page path.
+            </p>
+          </div>
+          <label for="email">Email</label
+          ><input
+            id="email"
+            name="email"
+            type="email"
+            maxlength="254"
+            autocomplete="email"
+            required
+          />
+          <label for="password">Password</label
+          ><input
+            id="password"
+            name="password"
+            type="password"
+            maxlength="128"
+            autocomplete="current-password"
+            required
+          />
+          <button id="submit" type="submit">Log in</button>
+        </form>
+        <p id="feedback" role="status"></p>
+        <a id="switch" href="/login.html?signup=1">Create an account</a>
+        <p class="auth-note">A focused workspace for your website’s recorded sessions.</p>
+      </main>
+    </div>
+  </body>
+</html>

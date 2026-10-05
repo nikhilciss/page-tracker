@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Profile & integration · PageTracker</title>
+    <link rel="stylesheet" href="/account.css" />
+    <script type="module" src="/profile.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="/profile.html">Workspace / Profile &amp; integration</a>
+      <div class="actions">
+        <span id="account"></span><button id="logout" class="secondary">Log out</button>
+      </div>
+    </header>
+    <main>
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">WORKSPACE SETTINGS</span>
+          <h1>Profile &amp; integration</h1>
+          <p>Everything you need to connect your website, in one place.</p>
+        </div>
+        <a href="/integration.html" class="button secondary">Integration guide ↗</a>
+      </div>
+      <p id="feedback" role="status"></p>
+      <p id="integration-feedback" role="status" aria-live="polite"></p>
+      <div class="profile-grid">
+        <div>
+          <section class="card profile-summary">
+            <div id="initials" class="avatar">◉</div>
+            <h2 id="profile-name"></h2>
+            <p id="profile-email"></p>
+            <span class="badge">Company workspace</span>
+            <dl>
+              <dt>Registered website</dt>
+              <dd id="profile-domain"></dd>
+              <dt>Account email</dt>
+              <dd id="profile-email-detail"></dd>
+            </dl>
+          </section>
+        </div>
+        <div>
+          <section class="card">
+            <h2>Website connection</h2>
+            <p id="connection-status"></p>
+            <p>
+              Your registered website is checked during signup. Add this tag to the pages you want
+              to record.
+            </p>
+            <div class="code-panel">
+              <div class="code-head">
+                <span>HTML / BLADE LAYOUT</span><button id="copy-script">Copy script</button>
+              </div>
+              <pre id="script-snippet"></pre>
+            </div>
+            <p>No API key, host token endpoint or host .env configuration is required.</p>
+          </section>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

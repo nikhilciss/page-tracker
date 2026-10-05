@@ -1,0 +1,11 @@
+# Dependencies, private configuration, and recorded data
+node_modules/
+.env*
+uploads/
+package-lock.json
+coverage/
+test-results/
+
+# Generated bundles; edit and format client/ sources instead
+public/tracker.js
+public/vendor/

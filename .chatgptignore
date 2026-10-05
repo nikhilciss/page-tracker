@@ -1,0 +1,40 @@
+# Installed dependencies
+node_modules/
+
+# Generated browser bundles (review client/ and shared/ sources instead)
+public/tracker.js
+public/vendor/
+
+# Private configuration; keep the example configuration reviewable
+.env
+.env.*
+!.env.example
+
+# Session data, checkpoints, videos, and other uploaded content
+uploads/
+
+# Generated dependency lockfiles
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build output, caches, and temporary files
+dist/
+build/
+.cache/
+.npm/
+tmp/
+temp/
+*.tmp
+*.log
+
+# Test output (keep test/ source files reviewable)
+coverage/
+test-results/
+playwright-report/
+
+# Git internals and operating-system files
+.git/
+.DS_Store
+Thumbs.db
