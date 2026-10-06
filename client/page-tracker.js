@@ -1,11 +1,22 @@
+import { readVisitorIdentity, identityPayload } from './visitor-identity.js';
+import { recordingJourney } from './recording-journey.js';
+import { startSemantic } from './semantic-transport.js';
+import { analyticsIdentity } from './analytics-identity.js';
 import { startPageCapture } from './page-capture.js';
 import { sensitiveElement } from '../shared/page-events.js';
 
 export function startPageTracker(script) {
   const endpoint = new URL('./api/track/', script.src);
+  const journey = recordingJourney(endpoint);
   const originalPage = () => location.origin + location.pathname;
   const keys = new WeakMap(),
     imageClicks = new WeakMap();
+  let redactionSelector = script.dataset.analyticsRedactSelectors || '';
+  try {
+    if (redactionSelector) document.querySelector(redactionSelector);
+  } catch {
+    redactionSelector = 'input,textarea,select';
+  }
   let fieldNumber = 0,
     epoch = 0,
     current;
@@ -16,7 +27,8 @@ export function startPageTracker(script) {
       .slice(0, 100)
       .map((element) => {
         if (!keys.has(element)) keys.set(element, 'field-' + ++fieldNumber);
-        const masked = sensitiveElement(element);
+        const masked =
+          sensitiveElement(element) || !!(redactionSelector && element.closest(redactionSelector));
         let value = masked ? '[REDACTED]' : clip(element.value, 2000);
         if (!masked && ['checkbox', 'radio'].includes(element.type))
           value = element.checked ? value : false;
@@ -52,11 +64,32 @@ export function startPageTracker(script) {
     }
     return result;
   }
+  const startAnalytics = analyticsIdentity(script, post);
   function initialize(state) {
     if (!state.sessionPromise) {
-      state.sessionPromise = post('init', { page_url: state.url }, AbortSignal.timeout(3000))
+      state.sessionPromise = post(
+        'init',
+        {
+          page_url: state.url,
+          ...identityPayload(readVisitorIdentity(script)),
+          language: clip(navigator.language, 40),
+          timezone: clip(Intl.DateTimeFormat().resolvedOptions().timeZone, 80),
+          referrer: (() => {
+            try {
+              return new URL(document.referrer).origin;
+            } catch {
+              return '';
+            }
+          })(),
+          viewport_width: Math.min(innerWidth, 20000),
+          viewport_height: Math.min(innerHeight, 20000),
+        },
+        AbortSignal.timeout(3000),
+      )
         .then((session) => {
           state.session = session;
+          journey.configure(session.recording_policy);
+          state.successArmed = journey.resumed || !journey.matches(false);
           return session;
         })
         .catch(() => {
@@ -83,18 +116,7 @@ export function startPageTracker(script) {
           duration_ms: snapshot.duration_ms,
           truncated: snapshot.truncated,
           page_title: clip(document.title, 300),
-          user_name:
-            clip(
-              script.dataset.userName ||
-                document.documentElement.dataset.userName ||
-                document.body?.dataset.userName,
-            ) || null,
-          user_id:
-            clip(
-              script.dataset.userId ||
-                document.documentElement.dataset.userId ||
-                document.body?.dataset.userId,
-            ) || null,
+          ...identityPayload(readVisitorIdentity(script)),
           fields: fields(),
         };
         const keepalive = new Blob([JSON.stringify(payload)]).size <= 48000;
@@ -106,8 +128,11 @@ export function startPageTracker(script) {
           keepalive,
         );
         state.offset = result.next_offset;
-        if (result.recording_id)
+        journey.remember(session, state.offset);
+        if (result.recording_id) {
           state.saved = { status: 'saved', recordingId: result.recording_id };
+          journey.clear();
+        }
         return result;
       } catch (error) {
         if (Number.isInteger(error.expectedOffset)) state.offset = error.expectedOffset;
@@ -126,6 +151,17 @@ export function startPageTracker(script) {
     const state = current;
     if (!state || state.closed) return { status: 'error' };
     if (state.saved) return state.saved;
+    await initialize(state);
+    if (reason === 'form') journey.attempt();
+    if (journey.enabled && reason !== 'success') {
+      try {
+        await state.upload;
+        await checkpoint(state, AbortSignal.timeout(3000));
+        return { status: 'checkpointed' };
+      } catch {
+        return { status: 'error' };
+      }
+    }
     if (state.saving) return state.saving;
     state.saving = (async () => {
       const controller = new AbortController();
@@ -146,13 +182,19 @@ export function startPageTracker(script) {
             if (controller.signal.aborted || state.closed) throw new Error('Page exited');
             return post(
               'page/finish',
-              { token: state.session.token, reason, expected_count: state.offset },
+              {
+                token: state.session.token,
+                reason,
+                expected_count: state.offset,
+                ...(journey.enabled ? { previous: journey.previous(state.session) } : {}),
+              },
               controller.signal,
             );
           })(),
         ]);
         if (!result.recording_id) throw new Error('Checkpoint incomplete');
         state.saved = { status: 'saved', recordingId: result.recording_id };
+        journey.clear();
         state.capture.stop();
         clearTimeout(state.timer);
         notify(state.saved);
@@ -169,7 +211,7 @@ export function startPageTracker(script) {
     return state.saving;
   }
   function finishOnExit(state) {
-    if (!state?.session || state.saved) return;
+    if (journey.enabled || !state?.session || state.saved) return;
     // Keep this well below the browser's 64 KiB keepalive budget. The video is already checkpointed.
     fetch(new URL('page/finish', endpoint), {
       method: 'POST',
@@ -191,6 +233,9 @@ export function startPageTracker(script) {
     } catch {
       /* Retried while this page remains alive. */
     }
+    if (!journey.matches(false)) state.successArmed = true;
+    if (state.successArmed && journey.matches() && !state.closed && !state.saved)
+      await save('success');
     if (!state.closed && !state.saved) state.timer = setTimeout(() => tick(state), 2000);
   }
   function begin() {
@@ -200,11 +245,54 @@ export function startPageTracker(script) {
           .catch(() => null)
       : Promise.resolve(null);
     const state = { epoch: ++epoch, url: originalPage(), offset: 0, closed: false, saved: null };
+    state.startedAt = performance.now();
     current = state;
-    state.capture = startPageCapture(key);
+    state.capture = startPageCapture(key, redactionSelector);
     initialize(state);
+    try {
+      state.analytics = startSemantic(
+        script,
+        () => initialize(state),
+        startAnalytics,
+        state.startedAt,
+      );
+    } catch {
+      /* Analytics never interrupts the recording lifecycle. */
+    }
     tick(state);
   }
+  let identityTimer;
+  window.addEventListener(
+    'page-tracker:identity-change',
+    () => {
+      clearTimeout(identityTimer);
+      identityTimer = setTimeout(async () => {
+        const state = current;
+        if (!state || state.closed) return;
+        try {
+          if (state.saved) {
+            const session = await initialize(state);
+            if (session)
+              await post(
+                'page/identity',
+                {
+                  token: session.token,
+                  ...identityPayload(readVisitorIdentity(script)),
+                },
+                AbortSignal.timeout(3000),
+              );
+          } else {
+            await state.upload;
+            await checkpoint(state);
+          }
+        } catch {
+          /* Periodic retry remains active. */
+        }
+      }, 250);
+    },
+    true,
+  );
+  document.addEventListener('submit', () => journey.attempt(), true);
   // Native handlers run first. Cancelled AJAX submissions stay part of the current page session.
   window.addEventListener('submit', async (event) => {
     const form = event.target;
@@ -228,7 +316,7 @@ export function startPageTracker(script) {
     const result = await save('form');
     if (current !== state || state.closed || !form.isConnected) return;
     if (
-      result.status !== 'saved' &&
+      !['saved', 'checkpointed'].includes(result.status) &&
       (script.dataset.recordingFailClosed === 'true' || form.dataset.recordingFailClosed === 'true')
     )
       return;
@@ -298,7 +386,11 @@ export function startPageTracker(script) {
     event.preventDefault();
     const result = await save('link');
     if (state !== current || state.closed) return;
-    if (result.status !== 'saved' && script.dataset.recordingFailClosed === 'true') return;
+    if (
+      !['saved', 'checkpointed'].includes(result.status) &&
+      script.dataset.recordingFailClosed === 'true'
+    )
+      return;
     location.assign(url.href);
   });
   // Limit implicit save intent to the current button event task, not a later browser refresh.
@@ -373,6 +465,12 @@ export function startPageTracker(script) {
   });
   window.UniversalTracker = Object.freeze({
     save: () => save('manual'),
+    confirmFormSuccess: (form) => {
+      current?.analytics?.confirmForm(form);
+      return journey.enabled ? save('success') : undefined;
+    },
+    analyticsFlush: () => current?.analytics?.flush(),
+    analyticsStatus: () => current?.analytics?.status(),
     checkpoint: () =>
       checkpoint()
         .then(() => ({ status: 'checkpointed' }))
@@ -382,13 +480,19 @@ export function startPageTracker(script) {
       if (!['http:', 'https:'].includes(destination.protocol))
         throw new Error('Unsupported navigation');
       const result = await save('link');
-      if (result.status === 'saved' || script.dataset.recordingFailClosed !== 'true')
+      if (
+        ['saved', 'checkpointed'].includes(result.status) ||
+        script.dataset.recordingFailClosed !== 'true'
+      )
         location.assign(destination.href);
       return result;
     },
     async reload() {
       const result = await save('reload');
-      if (result.status === 'saved' || script.dataset.recordingFailClosed !== 'true')
+      if (
+        ['saved', 'checkpointed'].includes(result.status) ||
+        script.dataset.recordingFailClosed !== 'true'
+      )
         location.reload();
       return result;
     },

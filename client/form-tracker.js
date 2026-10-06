@@ -1,3 +1,4 @@
+import { readVisitorIdentity, identityPayload } from './visitor-identity.js';
 import { startPageCapture } from './page-capture.js';
 /* Universal Tracker v2. Bundled page recorder; no cookies, persistent browser storage, or unload uploads. */
 export function startFormTracker(script) {
@@ -143,7 +144,10 @@ export function startFormTracker(script) {
       const version = generation;
       sessionPromise = request(
         'init',
-        { page_url: location.origin + location.pathname },
+        {
+          page_url: location.origin + location.pathname,
+          ...identityPayload(readVisitorIdentity(script)),
+        },
         AbortSignal.timeout(3000),
       ).catch(() => {
         if (generation === version) sessionPromise = null;
@@ -152,6 +156,31 @@ export function startFormTracker(script) {
     }
     return sessionPromise;
   }
+  let identityTimer;
+  window.addEventListener(
+    'page-tracker:identity-change',
+    () => {
+      clearTimeout(identityTimer);
+      identityTimer = setTimeout(async () => {
+        if (!active) return;
+        try {
+          const session = await initialize();
+          if (session)
+            await request(
+              'page/identity',
+              {
+                token: session.token,
+                ...identityPayload(readVisitorIdentity(script)),
+              },
+              AbortSignal.timeout(3000),
+            );
+        } catch {
+          /* Host identity reporting must not interrupt the application. */
+        }
+      }, 250);
+    },
+    true,
+  );
   function scan() {
     if (!active) return;
     for (const [form, state] of states) {
@@ -292,8 +321,7 @@ export function startFormTracker(script) {
       const metadata = {
         form_key: state.formKey,
         form_id: clip(form.id),
-        user_name: clip(form.dataset.userName || script.dataset.userName) || null,
-        user_id: form.getAttribute('data-user-id') ? clip(form.getAttribute('data-user-id')) : null,
+        ...identityPayload(readVisitorIdentity(script, form)),
       };
       const controller = new AbortController();
       let timer,

@@ -8,16 +8,12 @@ export function mountShell(user) {
   aside.innerHTML =
     '<a class="brand" href="' +
     (master ? '/master/admin' : '/') +
-    '"><span class="brand-mark">◉</span><span>PageTracker<small>SESSION INTELLIGENCE</small></span></a><div class="nav-label">WORKSPACE</div><nav></nav><div class="sidebar-foot"><strong>Your sessions. Your infrastructure.</strong>Self-hosted recording &amp; replay</div>';
+    '"><img class="brand-logo" src="/assets/cis-logo-white.png" alt="" width="52" height="34" /><span class="brand-name">CIS SessionLens<small>SESSION INTELLIGENCE</small></span></a><div class="nav-label">WORKSPACE</div><nav></nav><div class="sidebar-foot"><strong>Your sessions. Your infrastructure.</strong>Self-hosted recording &amp; replay</div>';
   const links = master
-    ? [
-        ['▦', 'Companies', '/master/admin'],
-        ['≡', 'Integration guide', '/integration.html'],
-      ]
+    ? [['▦', 'Companies', '/master/admin']]
     : [
         ['▦', 'Session overview', '/'],
         ['◎', 'Profile & integration', '/profile.html'],
-        ['≡', 'Integration guide', '/integration.html'],
       ];
   for (const [icon, label, url] of links) {
     const a = document.createElement('a');

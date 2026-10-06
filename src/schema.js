@@ -40,7 +40,17 @@ const event = z.discriminatedUnion('type', [
   z.object({ ...base, type: z.literal('submit') }).strict(),
 ]);
 export const initSchema = z
-  .object({ page_url: z.url().max(2048), authorization: z.string().max(12000).optional() })
+  .object({
+    page_url: z.url().max(2048),
+    authorization: z.string().max(12000).optional(),
+    user_name: z.string().max(160).nullable().optional(),
+    user_id: z.string().max(160).nullable().optional(),
+    language: z.string().max(40).optional(),
+    timezone: z.string().max(80).optional(),
+    referrer: z.string().max(2048).optional(),
+    viewport_width: z.number().int().min(0).max(20000).optional(),
+    viewport_height: z.number().int().min(0).max(20000).optional(),
+  })
   .strict();
 const pageEvent = z
   .object({
@@ -138,7 +148,26 @@ export const checkpointSchema = z
 export const finishSchema = z
   .object({
     token: z.string().max(12000),
-    reason: z.enum(['manual', 'link', 'form', 'reload', 'pagehide']),
+    reason: z.enum(['manual', 'link', 'form', 'reload', 'pagehide', 'success']),
+    previous: z
+      .array(
+        z
+          .object({
+            token: z.string().max(12000),
+            expected_count: z.number().int().min(0).max(15000),
+          })
+          .strict(),
+      )
+      .max(19)
+      .optional(),
     expected_count: z.number().int().min(0).max(15000),
+  })
+  .strict();
+
+export const identitySchema = z
+  .object({
+    token: z.string().max(12000),
+    user_id: z.string().max(160).nullable(),
+    user_name: z.string().max(160).nullable(),
   })
   .strict();

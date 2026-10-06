@@ -1,3 +1,4 @@
+import { parseRecordingPolicies } from './recording-policy.js';
 import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,10 +26,12 @@ export function getConfig() {
             .split(',')
             .filter(Boolean)
             .map((value) => new URL(value.trim()).origin),
+    recordingPolicies: parseRecordingPolicies(process.env.RECORDING_SUCCESS_RULES),
     port,
     publicOrigin,
     secret,
     host: process.env.HOST || '127.0.0.1',
+    analyticsTimeoutSeconds: integer('ANALYTICS_SESSION_TIMEOUT_SECONDS', 1800, 60, 86400),
     sessionTtl: integer('SESSION_TTL_SECONDS', 14400, 60, 86400),
     retentionDays: integer('RETENTION_DAYS', 30, 1, 3650),
     trustProxy: integer('TRUST_PROXY_HOPS', 0, 0, 10),
@@ -36,6 +39,7 @@ export function getConfig() {
     chromePath: process.env.CHROME_PATH || undefined,
     videoSandbox: process.env.VIDEO_CHROMIUM_SANDBOX !== 'false',
     videoMaxSeconds: integer('VIDEO_MAX_SECONDS', 600, 1, 3600),
+    videoFormat: process.env.VIDEO_FORMAT === 'mp4' ? 'mp4' : 'webm',
     videoFps: integer('VIDEO_FPS', 10, 1, 30),
     db: {
       host: process.env.DB_HOST || 'localhost',

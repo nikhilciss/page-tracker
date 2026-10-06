@@ -77,3 +77,64 @@ test('page checkpoint and finish protocol is private, ordered and idempotent', a
     404,
   );
 });
+
+test('combined recordings reject invalid continuation and retry idempotently', async (t) => {
+  const f = await fixture();
+  t.after(() => f.close());
+  const post = (route, body) =>
+    fetch(f.url + '/api/track/' + route, {
+      method: 'POST',
+      headers: { Origin: f.url, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  const a = await (await post('init', { page_url: f.url + '/form' })).json();
+  const b = await (await post('init', { page_url: f.url + '/success' })).json();
+  const checkpoint = (session) => ({
+    token: session.token,
+    offset: 0,
+    duration_ms: 500,
+    truncated: false,
+    page_title: '',
+    user_id: null,
+    fields: [],
+    events: [
+      { type: 4, timestamp: 1000, data: { href: f.url + '/form', width: 800, height: 600 } },
+      {
+        type: 2,
+        timestamp: 1001,
+        data: { node: { type: 0, id: 1, childNodes: [] }, initialOffset: { top: 0, left: 0 } },
+      },
+    ],
+  });
+  await post('page/checkpoint', checkpoint(b));
+  const body = {
+    token: b.token,
+    reason: 'success',
+    expected_count: 2,
+    previous: [{ token: a.token, expected_count: 2 }],
+  };
+  assert.equal(
+    (
+      await post('page/finish', {
+        ...body,
+        previous: [{ token: a.token + 'bad', expected_count: 2 }],
+      })
+    ).status,
+    401,
+  );
+  assert.equal(
+    (await post('page/finish', { ...body, previous: [{ token: b.token, expected_count: 2 }] }))
+      .status,
+    401,
+  );
+  assert.equal((await post('page/finish', body)).status, 409);
+  assert.equal(f.rows.size, 0);
+  await post('page/checkpoint', checkpoint(a));
+  const done = await (await post('page/finish', body)).json();
+  assert.ok(done.recording_id);
+  assert.equal((await (await post('page/finish', body)).json()).recording_id, done.recording_id);
+  assert.equal(f.rows.size, 1);
+  const saved = await f.store.read(done.recording_id);
+  assert.equal(saved.recording_segments.length, 2);
+  assert.equal(saved.page.events.filter((e) => e.type === 2).length, 2);
+});

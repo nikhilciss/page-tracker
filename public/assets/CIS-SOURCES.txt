@@ -1,0 +1,7 @@
+CIS SessionLens brand assets
+Official source: https://www.cisin.com/
+White logo: https://www.cisin.com/images/logo_white_1.png
+Dark logo: https://www.cisin.com/images/logo_black.png
+Logos copied without alteration.
+Primary red #AF110E from https://www.cisin.com/css/main.css (:root --color1).
+UI neutral/accent shades adapted for dashboard readability.

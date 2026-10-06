@@ -3,92 +3,287 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Session overview · PageTracker</title>
+    <title>Analytics · CIS SessionLens</title>
     <link rel="stylesheet" href="/account.css" />
+    <link rel="stylesheet" href="/analytics.css" />
     <script type="module" src="/app.js"></script>
+    <link rel="icon" type="image/png" href="/assets/cis-logo-black.png" />
   </head>
   <body>
     <header>
-      <a href="/">Workspace / Overview</a>
+      <a href="/">Workspace / Analytics</a>
       <div class="actions">
-        <span class="avatar" aria-hidden="true">◉</span><span id="account"></span
-        ><button id="logout" class="secondary">Log out</button>
+        <span id="account"></span><button id="logout" class="secondary">Log out</button>
       </div>
     </header>
-    <main>
+    <main class="analytics">
       <div class="page-heading">
         <div>
-          <span class="eyebrow">YOUR WORKSPACE AT A GLANCE</span>
-          <h1>Session overview</h1>
-          <p>Understand the journey behind every interaction.</p>
+          <span class="eyebrow">WORKSPACE ANALYTICS</span>
+          <h1>Every visit, in context.</h1>
+          <p>Explore activity, understand journeys and review real sessions.</p>
         </div>
-        <a class="button" href="/profile.html">＋ Connect your website</a>
+        <button id="refresh" class="secondary">Refresh data</button>
       </div>
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-top">Total sessions<span class="stat-icon">▦</span></div>
-          <strong id="stat-total">—</strong><small>All recorded visits in your workspace</small>
-        </div>
-        <div class="stat">
-          <div class="stat-top">Average duration<span class="stat-icon">◷</span></div>
-          <strong id="stat-duration">—</strong><small>Time spent in a recorded session</small>
-        </div>
-        <div class="stat">
-          <div class="stat-top">Guest sessions<span class="stat-icon">♙</span></div>
-          <strong id="stat-guests">—</strong><small>Visits without a provided user identity</small>
-        </div>
-      </div>
-      <div class="notice">
-        <span class="stat-icon" aria-hidden="true">⌘</span>
-        <div>
-          <strong>One workspace. A clearer picture.</strong>
-          <p>
-            Your registered website: <span id="origin"></span>. Manage your profile and installation
-            in your profile.
-          </p>
-        </div>
-        <a href="/profile.html" class="button secondary">Open profile ↗</a>
-      </div>
-      <p id="feedback" role="status"></p>
-      <section class="card">
-        <div class="card-head">
-          <div>
-            <h2 id="count">Recorded sessions</h2>
-            <p>Open a session to explore its activity and replay.</p>
+      <form id="filters" class="filter-panel">
+        <label
+          >Period<select id="period">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="month">This month</option>
+            <option value="previous">Last month</option>
+            <option value="custom">Custom range</option>
+          </select></label
+        >
+        <label>From (UTC)<input id="from" type="date" required /></label
+        ><label>Through (UTC)<input id="to" type="date" required /></label
+        ><label
+          >Project / domain<select id="project">
+            <option value="">All projects</option>
+          </select></label
+        ><label
+          >Device<select id="device">
+            <option value="">All devices</option>
+          </select></label
+        ><label
+          >Browser<select id="browser">
+            <option value="">All browsers</option>
+          </select></label
+        ><label
+          >Country<select id="country">
+            <option value="">All countries</option>
+          </select></label
+        ><label
+          >Referrer origin<select id="referrer">
+            <option value="">All referrers</option>
+          </select></label
+        ><label
+          >IP address<input
+            id="ip"
+            type="text"
+            maxlength="45"
+            placeholder="Exact IP or Unknown" /></label
+        ><label
+          >Form input method<select id="input_method">
+            <option value="">All methods</option>
+            <option value="typing">Typing / editing</option>
+            <option value="paste">Paste</option>
+            <option value="drop">Drag and drop</option>
+            <option value="replacement">Text replacement</option>
+            <option value="selection">Selection</option>
+            <option value="unknown">Not captured</option>
+          </select></label
+        ><button type="submit">Apply filters</button
+        ><button type="button" id="reset-filters" class="secondary">Clear filters</button>
+      </form>
+      <p id="feedback" role="status" aria-live="polite">Loading analytics…</p>
+      <div id="dashboard" aria-busy="true">
+        <p id="coverage" class="data-note" role="status"></p>
+        <div id="metrics" class="metric-grid"></div>
+        <p class="data-note">
+          Sessions starting in the selected UTC range; activity includes their captured lifetime.
+          Duration is an observed span. Engagement is estimated, with overlapping tabs deduplicated.
+        </p>
+        <div id="recording-summary" class="metric-grid recording-summary"></div>
+        <section class="card" id="recent-sessions" style="margin-bottom: 24px">
+          <div class="card-head">
+            <div>
+              <h2>Recent sessions <span id="stat-total" class="badge">—</span></h2>
+              <p>Includes visits without a finalized recording.</p>
+            </div>
           </div>
-          <button id="refresh" class="secondary">↻ Refresh</button>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Visitor / Session</th>
+                  <th>Pages</th>
+                  <th>Observed / recorded duration</th>
+                  <th>Engagement est.</th>
+                  <th>Device / Browser</th>
+                  <th>Country / IP</th>
+                  <th>Started</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="sessions"></tbody>
+            </table>
+          </div>
+          <div class="pagination actions">
+            <span id="page-label"></span><button id="previous" class="secondary">← Previous</button
+            ><button id="next" class="secondary">Next →</button>
+          </div>
+        </section>
+        <div id="empty-state" class="empty card" hidden>
+          <h2>No sessions in this selection</h2>
+          <p>Adjust your filters, or connect your website to start collecting activity.</p>
+          <a href="/profile.html">Open integration →</a>
         </div>
-        <div id="empty-state" class="empty" hidden>
-          <span class="empty-symbol">▤</span>
-          <h3>Your first session starts here</h3>
+        <div class="analytics-grid" id="extended-reports">
+          <section class="card">
+            <h2>Visits by country</h2>
+            <p>
+              First available document context per visit. IP location is approximate; private
+              networks remain separate.
+            </p>
+            <div id="country-report"></div>
+          </section>
+          <section class="card">
+            <h2>Top IP addresses</h2>
+            <p>
+              Visits sharing an observed IP. Shared office networks and VPNs can use the same IP.
+            </p>
+            <div id="ip-report"></div>
+          </section>
+          <section class="card">
+            <h2>Top domains</h2>
+            <p>
+              Distinct visits per visited domain. A multi-domain visit can appear more than once.
+            </p>
+            <div id="domain-report"></div>
+          </section>
+          <section class="card">
+            <h2>Referrer origins</h2>
+            <p>
+              First available document context. Unknown does not necessarily mean direct traffic.
+            </p>
+            <div id="referrer-report"></div>
+          </section>
+          <section class="card">
+            <h2>Observed session duration</h2>
+            <p>
+              Analytics sessions only. Last activity minus session start; not exact time on page.
+            </p>
+            <div id="duration-report"></div>
+          </section>
+          <section class="card">
+            <h2>Time to first submit attempt</h2>
+            <p>
+              Elapsed time from each page start to its first browser submit event. Not a
+              server-success measure.
+            </p>
+            <div id="submit-timing-report"></div>
+          </section>
+          <section class="card">
+            <h2>Form input methods</h2>
+            <p>
+              Visits with observed typing, paste or selection metadata. A visit may use multiple
+              methods; replacement is not proof of autofill.
+            </p>
+            <div id="input-method-report"></div>
+            <p id="method-coverage" class="data-note"></p>
+          </section>
+          <section class="card">
+            <h2>Sensitive-field activity</h2>
+            <p>
+              Metadata-only interactions with fields marked sensitive. This is not a whole-recording
+              masking or compliance assessment.
+            </p>
+            <div id="sensitive-report"></div>
+          </section>
+          <section class="card report-wide">
+            <h2>Recent saved recordings</h2>
+            <p>
+              Recordings linked to the filtered visits, including historical records. Opening a row
+              shows its replay and details.
+            </p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Saved at</th>
+                    <th>Domain / page</th>
+                    <th>Recording ID</th>
+                    <th>Duration</th>
+                    <th>Video status</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-recording-rows"></tbody>
+              </table>
+            </div>
+            <p id="recording-report-empty" class="muted"></p>
+          </section>
+        </div>
+        <div class="analytics-grid">
+          <section class="card">
+            <h2>Sessions over time</h2>
+            <p>Analytics starts and historical recorded visits · UTC</p>
+            <div id="session-chart"></div>
+          </section>
+          <section class="card">
+            <h2>Engagement trend</h2>
+            <p>Estimated engagement, grouped by session start day</p>
+            <div id="engagement-chart"></div>
+          </section>
+          <section class="card">
+            <h2>Session visitor mix</h2>
+            <p>Sessions grouped by when their identity was first seen</p>
+            <div id="visitors-chart"></div>
+          </section>
+          <section class="card">
+            <h2>Form activity</h2>
+            <p>Browser attempts and host-reported success are separate.</p>
+            <div id="forms-chart"></div>
+          </section>
+          <section class="card">
+            <h2>Top pages</h2>
+            <p>Page views, including refreshes and SPA routes</p>
+            <div id="pages-chart"></div>
+          </section>
+          <section class="card">
+            <h2>Scroll reach</h2>
+            <p>Page views reaching each depth milestone</p>
+            <div id="scroll-chart"></div>
+          </section>
+          <section class="card">
+            <h2>Interactions & navigation</h2>
+            <p>Semantic activity, independent of raw replay events</p>
+            <div id="activity-chart"></div>
+          </section>
+          <section class="card">
+            <h2>Browser, device & OS</h2>
+            <p>
+              Inferred from captured browser context or a linked recording. Sessions without either
+              are Unknown.
+            </p>
+            <div class="breakdowns">
+              <div>
+                <h3>Browser</h3>
+                <div id="browser-chart"></div>
+              </div>
+              <div>
+                <h3>Device</h3>
+                <div id="device-chart"></div>
+              </div>
+              <div>
+                <h3>OS</h3>
+                <div id="os-chart"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <section class="card">
+          <h2>Reporting scope</h2>
           <p>
-            Connect your website from Profile &amp; integration, then complete a page action to see
-            its recording here.
+            Referrer origins can be filtered above. UTM campaign attribution, vendor identity,
+            certificate verification, lead matching and domain ownership are not measured by CIS
+            SessionLens. Website availability checks are not ownership verification.
           </p>
-          <a href="/profile.html">Set up your integration →</a>
+        </section>
+      </div>
+      <details class="card" id="legacy">
+        <summary>Recording library · includes historical recordings</summary>
+        <p>
+          All recordings, across all dates, remain available here. Overview filters apply to the
+          session list above.
+        </p>
+        <p id="legacy-status" role="status"></p>
+        <div id="recordings" class="legacy-list"></div>
+        <div class="actions">
+          <button id="legacy-prev" class="secondary">Previous recordings</button
+          ><button id="legacy-next" class="secondary">Next recordings</button>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Session ID</th>
-                <th>Visitor</th>
-                <th>Page</th>
-                <th>Duration</th>
-                <th>Recorded</th>
-              </tr>
-            </thead>
-            <tbody id="recordings"></tbody>
-          </table>
-        </div>
-        <div class="actions pagination">
-          <span id="page-label"></span><button id="previous" class="secondary">← Previous</button
-          ><button id="next" class="secondary">Next →</button>
-        </div>
-      </section>
-      <p class="muted">
-        Recordings are private to your workspace. Capture limits may affect playback duration.
-      </p>
+      </details>
     </main>
   </body>
 </html>

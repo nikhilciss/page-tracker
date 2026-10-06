@@ -1,3 +1,4 @@
+import { authenticatedIdentity, AuthenticationError } from './authenticated-identity.js';
 import { verifyDomain } from './domain-access.js';
 import {
   randomBytes,
@@ -51,8 +52,7 @@ const tokenFrom = (req) =>
     .find((v) => v.startsWith('tracker_session='))
     ?.slice(16);
 const publicUser = (user) => ({
-  id: user.id,
-  name: user.name,
+  ...authenticatedIdentity(user),
   email: user.email,
   company_origin: user.company_origin,
   is_master: !!user.is_master,
@@ -76,10 +76,25 @@ export function accountAuth({ app, config, repository, verifier = verifyDomain }
       return res.status(401).json({ error: 'Please log in.' });
     const user = await repository.loginSession(digest(token));
     if (!user) return res.status(401).json({ error: 'Session expired. Please log in.' });
+    try {
+      authenticatedIdentity(user);
+    } catch (error) {
+      if (error instanceof AuthenticationError)
+        return res.status(401).json({ error: error.message });
+      throw error;
+    }
     req.account = user;
     next();
   }
   async function startSession(req, res, user) {
+    let responseUser;
+    try {
+      responseUser = publicUser(user);
+    } catch (error) {
+      if (error instanceof AuthenticationError)
+        return res.status(401).json({ error: error.message });
+      throw error;
+    }
     const old = tokenFrom(req);
     if (old) await repository.deleteLoginSession(digest(old));
     const token = randomBytes(32).toString('hex');
@@ -89,7 +104,7 @@ export function accountAuth({ app, config, repository, verifier = verifyDomain }
       new Date(Date.now() + 12 * 3600000),
     );
     res.cookie('tracker_session', token, { ...cookieOptions, maxAge: 12 * 3600000 });
-    res.json({ user: publicUser(user) });
+    res.json({ user: responseUser });
   }
   app.use('/api/auth', express.json({ limit: '8kb' }), csrf);
   const limiter = rateLimit({
@@ -124,7 +139,7 @@ export function accountAuth({ app, config, repository, verifier = verifyDomain }
       if (!(await verifier(company_origin, null, 'http', config.localVerificationOrigins || [])))
         return res.status(400).json({
           error:
-            'Signup requires your company website to return HTTP 200. Redirects are not followed.',
+            'Signup requires your company website to return HTTP 200. Only same-origin redirects are followed (up to three).',
         });
     } catch {
       return res.status(400).json({
@@ -150,7 +165,7 @@ export function accountAuth({ app, config, repository, verifier = verifyDomain }
           .json({ error: 'An account with this email or company origin already exists.' });
       throw error;
     }
-    await startSession(req, res, user);
+    await startSession(req, res, await repository.accountByEmail(user.email));
   });
   // A fixed dummy hash keeps unknown-email logins on the password verification path.
   const dummy = hashPassword(randomBytes(32).toString('hex'));

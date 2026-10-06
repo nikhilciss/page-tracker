@@ -31,7 +31,8 @@ export async function renderVideo(recording, destination, options = {}) {
     encoder,
     encoderResult,
     failed = false;
-  const temporary = destination + '.tmp.mp4';
+  const format = destination.endsWith('.webm') ? 'webm' : 'mp4';
+  const temporary = destination + '.tmp.' + format;
   const watchdog = setTimeout(
     () => {
       failed = true;
@@ -89,18 +90,39 @@ export async function renderVideo(recording, destination, options = {}) {
         '-i',
         'pipe:0',
         '-an',
-        '-c:v',
-        'libx264',
-        '-preset',
-        'veryfast',
-        '-threads',
-        '2',
-        '-crf',
-        '23',
-        '-pix_fmt',
-        'yuv420p',
-        '-movflags',
-        '+faststart',
+        ...(format === 'webm'
+          ? [
+              '-c:v',
+              'libvpx-vp9',
+              '-crf',
+              '36',
+              '-b:v',
+              '0',
+              '-deadline',
+              'good',
+              '-cpu-used',
+              '4',
+              '-row-mt',
+              '1',
+              '-threads',
+              '2',
+              '-pix_fmt',
+              'yuv420p',
+            ]
+          : [
+              '-c:v',
+              'libx264',
+              '-preset',
+              'veryfast',
+              '-threads',
+              '2',
+              '-crf',
+              '23',
+              '-pix_fmt',
+              'yuv420p',
+              '-movflags',
+              '+faststart',
+            ]),
         temporary,
       ],
       { stdio: ['pipe', 'ignore', 'pipe'] },
@@ -138,6 +160,8 @@ export async function renderVideo(recording, destination, options = {}) {
     await chmod(temporary, 0o600);
     await rename(temporary, destination);
     return {
+      format,
+      segments: recording.recording_segments || [],
       duration_ms: Math.round((frames * 1000) / fps),
       width,
       height,
@@ -170,6 +194,10 @@ export function createVideoService({
     if (!validId(id)) throw new Error('Invalid recording ID');
     return path.join(config.recordingsDir, id + suffix);
   };
+  const outputFormat = config.videoFormat === 'mp4' ? 'mp4' : 'webm';
+  const existingFile = (id) =>
+    ['.webm', '.mp4'].map((suffix) => filename(id, suffix)).find((file) => existsSync(file));
+  const videoFile = (id) => existingFile(id) || filename(id, '.' + outputFormat);
   async function saveStatus(id, data) {
     const target = filename(id, '.video');
     await writeFile(target + '.tmp', serialize({ ...data, updated_at: new Date().toISOString() }), {
@@ -179,7 +207,11 @@ export function createVideoService({
   }
   async function status(id) {
     try {
-      return deserialize(await readFile(filename(id, '.video')));
+      const state = deserialize(await readFile(filename(id, '.video')));
+      return {
+        ...state,
+        format: existingFile(id)?.endsWith('.webm') ? 'webm' : state.format || 'mp4',
+      };
     } catch (error) {
       if (error.code === 'ENOENT') {
         try {
@@ -209,13 +241,16 @@ export function createVideoService({
       try {
         if (!(await repository.get(id))) return;
         await saveStatus(id, { status: 'processing' });
-        if (existsSync(filename(id, '.mp4'))) {
+        if (!!existingFile(id)) {
           await store.removeCapture(id);
-          await saveStatus(id, { status: 'ready' });
+          await saveStatus(id, {
+            status: 'ready',
+            format: videoFile(id).endsWith('.webm') ? 'webm' : 'mp4',
+          });
           return;
         }
         const recording = await store.read(id);
-        const details = await renderer(recording, filename(id, '.mp4'), {
+        const details = await renderer(recording, videoFile(id), {
           chromePath: config.chromePath,
           maxSeconds: config.videoMaxSeconds || 600,
           sandbox: config.videoSandbox !== false,
@@ -223,11 +258,11 @@ export function createVideoService({
         });
         // Retention may have removed the recording during a long render.
         if (!(await repository.get(id))) {
-          await unlink(filename(id, '.mp4')).catch(() => {});
+          await unlink(videoFile(id)).catch(() => {});
           return;
         }
         await store.removeCapture(id);
-        await saveStatus(id, { status: 'ready', ...details });
+        await saveStatus(id, { status: 'ready', format: outputFormat, ...details });
       } catch (error) {
         logger.error('Video generation failed', { id, message: error.message });
         if (await repository.get(id).catch(() => null))
@@ -245,18 +280,21 @@ export function createVideoService({
   }
   return {
     status,
-    file: (id) => filename(id, '.mp4'),
+    file: (id) => videoFile(id),
     async enqueue(id, retry = false) {
       if (stopped || scheduled.has(id)) return;
       const current = await status(id);
-      if (current.status === 'ready' && existsSync(filename(id, '.mp4'))) {
+      if (current.status === 'ready' && !!existingFile(id)) {
         await store.removeCapture(id);
         return;
       }
       if (current.status === 'failed' && !retry) return;
-      if (existsSync(filename(id, '.mp4'))) {
+      if (!!existingFile(id)) {
         await store.removeCapture(id);
-        await saveStatus(id, { status: 'ready' });
+        await saveStatus(id, {
+          status: 'ready',
+          format: videoFile(id).endsWith('.webm') ? 'webm' : 'mp4',
+        });
         return;
       }
       const recording = await store.read(id);
@@ -279,7 +317,7 @@ export function createVideoService({
         throw error;
       });
       for (const file of files)
-        if (/\.(?:(?:json|capture)\.gz|mp4|video(?:\.json)?)$/.test(file)) {
+        if (/\.(?:(?:json|capture)\.gz|mp4|webm|video(?:\.json)?)$/.test(file)) {
           const id = file.split('.')[0];
           if (validId(id) && (await repository.get(id))) await this.enqueue(id);
         }

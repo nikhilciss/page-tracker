@@ -1,0 +1,563 @@
+{
+  "source": "Isolated automated test, first 30 events",
+  "events": [
+    {
+      "id": "fd312a6c-aad8-4ddc-b9d0-9f4f8b87a905",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "session_start",
+      "occurred_at": "2026-10-05T12:12:27.376Z",
+      "sequence_number": 0,
+      "page_offset_ms": 0,
+      "session_offset_ms": 0,
+      "recording_offset_ms": 0,
+      "metadata": {
+        "source": "server"
+      }
+    },
+    {
+      "id": "4fb6e41c-9c49-4cdf-b308-df6eb8db39e1",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "page_view",
+      "occurred_at": "2026-10-05T12:12:27.438Z",
+      "sequence_number": 0,
+      "page_offset_ms": 62,
+      "session_offset_ms": 62,
+      "recording_offset_ms": 62,
+      "metadata": {
+        "url": "http://127.0.0.1:45663/semantic-fixture",
+        "navigation": "initial"
+      }
+    },
+    {
+      "id": "afbac2f6-ad9b-45d4-8385-353244b587ff",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "visibility_change",
+      "occurred_at": "2026-10-05T12:12:27.438Z",
+      "sequence_number": 1,
+      "page_offset_ms": 62,
+      "session_offset_ms": 62,
+      "recording_offset_ms": 62,
+      "metadata": {
+        "visibility": "visible"
+      }
+    },
+    {
+      "id": "389f76c3-24c0-495e-bde5-605432e79413",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "scroll_milestone",
+      "occurred_at": "2026-10-05T12:12:27.438Z",
+      "sequence_number": 2,
+      "page_offset_ms": 62,
+      "session_offset_ms": 62,
+      "recording_offset_ms": 62,
+      "metadata": {
+        "depth": 26,
+        "milestone": 25
+      }
+    },
+    {
+      "id": "7edf60bd-9ee2-440d-bce1-35863754d6ee",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_view",
+      "occurred_at": "2026-10-05T12:12:27.449Z",
+      "sequence_number": 3,
+      "page_offset_ms": 73,
+      "session_offset_ms": 73,
+      "recording_offset_ms": 73,
+      "metadata": {
+        "form": "form-1"
+      }
+    },
+    {
+      "id": "0b16f66b-5624-4d5b-b6a1-e9552c7936ff",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "click",
+      "occurred_at": "2026-10-05T12:12:27.623Z",
+      "sequence_number": 4,
+      "page_offset_ms": 247,
+      "session_offset_ms": 247,
+      "recording_offset_ms": 247,
+      "metadata": {
+        "x": 42,
+        "y": 10,
+        "id": "action",
+        "tag": "button",
+        "text": "Get Started",
+        "classes": [],
+        "sensitive": false
+      }
+    },
+    {
+      "id": "68941354-f4f9-442b-a394-f44fa17234f7",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "click",
+      "occurred_at": "2026-10-05T12:12:27.667Z",
+      "sequence_number": 5,
+      "page_offset_ms": 291,
+      "session_offset_ms": 291,
+      "recording_offset_ms": 291,
+      "metadata": {
+        "x": 578,
+        "y": 31,
+        "tag": "button",
+        "form": "form-1",
+        "classes": [],
+        "sensitive": false
+      }
+    },
+    {
+      "id": "415ab383-8584-46b7-a266-5ce4b94c7950",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_validation_attempt",
+      "occurred_at": "2026-10-05T12:12:27.667Z",
+      "sequence_number": 6,
+      "page_offset_ms": 291,
+      "session_offset_ms": 291,
+      "recording_offset_ms": 291,
+      "metadata": {
+        "form": "form-1",
+        "action": "submit_button"
+      }
+    },
+    {
+      "id": "780efa59-6b7e-427e-8380-3e54f08d4624",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_validation_attempt",
+      "occurred_at": "2026-10-05T12:12:27.667Z",
+      "sequence_number": 7,
+      "page_offset_ms": 291,
+      "session_offset_ms": 291,
+      "recording_offset_ms": 291,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-1",
+        "action": "invalid",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "7d311e63-03c0-4195-886f-e7a2ae8505e1",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_start",
+      "occurred_at": "2026-10-05T12:12:27.668Z",
+      "sequence_number": 8,
+      "page_offset_ms": 292,
+      "session_offset_ms": 292,
+      "recording_offset_ms": 292,
+      "metadata": {
+        "form": "form-1"
+      }
+    },
+    {
+      "id": "7b172cd4-484d-4215-9714-0873a07d3f2e",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.668Z",
+      "sequence_number": 9,
+      "page_offset_ms": 292,
+      "session_offset_ms": 292,
+      "recording_offset_ms": 292,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-1",
+        "action": "focus",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "ea1d5da1-6ab1-4f97-be45-92b09fcafac1",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.694Z",
+      "sequence_number": 10,
+      "page_offset_ms": 318,
+      "session_offset_ms": 318,
+      "recording_offset_ms": 318,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-1",
+        "action": "input_started",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "a37ea641-eb8e-4d55-9c14-e0eaf9a270f8",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.708Z",
+      "sequence_number": 11,
+      "page_offset_ms": 332,
+      "session_offset_ms": 332,
+      "recording_offset_ms": 332,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-1",
+        "action": "input_completed",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "b2567fe0-fa60-4967-8dba-dea1d99d0f45",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.708Z",
+      "sequence_number": 12,
+      "page_offset_ms": 332,
+      "session_offset_ms": 332,
+      "recording_offset_ms": 332,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-1",
+        "action": "blur",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "76e93236-4272-494c-b7e3-97dc11ffc88e",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.708Z",
+      "sequence_number": 13,
+      "page_offset_ms": 332,
+      "session_offset_ms": 332,
+      "recording_offset_ms": 332,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-2",
+        "action": "focus",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "39d566bc-ab70-47a4-9f9b-71ff3bfd231b",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.710Z",
+      "sequence_number": 14,
+      "page_offset_ms": 334,
+      "session_offset_ms": 334,
+      "recording_offset_ms": 334,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-2",
+        "action": "input_started",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "2195db77-64de-4655-8405-a0c4166e1578",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.718Z",
+      "sequence_number": 15,
+      "page_offset_ms": 342,
+      "session_offset_ms": 342,
+      "recording_offset_ms": 342,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-2",
+        "action": "input_completed",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "464e1675-b722-4d74-bbaa-c9ac7eaa227d",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.718Z",
+      "sequence_number": 16,
+      "page_offset_ms": 342,
+      "session_offset_ms": 342,
+      "recording_offset_ms": 342,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-2",
+        "action": "blur",
+        "sensitive": true,
+        "field_type": "other"
+      }
+    },
+    {
+      "id": "78e67d0e-48af-4f71-8fcc-aa63df605586",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.718Z",
+      "sequence_number": 17,
+      "page_offset_ms": 342,
+      "session_offset_ms": 342,
+      "recording_offset_ms": 342,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-3",
+        "action": "focus",
+        "sensitive": true,
+        "field_type": "text"
+      }
+    },
+    {
+      "id": "b3013fed-320b-42d3-a142-8936ca9789cb",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.720Z",
+      "sequence_number": 18,
+      "page_offset_ms": 344,
+      "session_offset_ms": 344,
+      "recording_offset_ms": 344,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-3",
+        "action": "input_started",
+        "sensitive": true,
+        "field_type": "text"
+      }
+    },
+    {
+      "id": "933b6b0f-a55c-4aa1-afb8-dbdf168c049b",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.765Z",
+      "sequence_number": 19,
+      "page_offset_ms": 389,
+      "session_offset_ms": 389,
+      "recording_offset_ms": 389,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-3",
+        "action": "input_completed",
+        "sensitive": true,
+        "field_type": "text"
+      }
+    },
+    {
+      "id": "c8b34e52-58ed-4373-b353-8f00ef2dc9f2",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_field_interaction",
+      "occurred_at": "2026-10-05T12:12:27.765Z",
+      "sequence_number": 20,
+      "page_offset_ms": 389,
+      "session_offset_ms": 389,
+      "recording_offset_ms": 389,
+      "metadata": {
+        "form": "form-1",
+        "field": "field-3",
+        "action": "blur",
+        "sensitive": true,
+        "field_type": "text"
+      }
+    },
+    {
+      "id": "bd204a8d-59a6-4d5a-a9da-f433ad7193ab",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "click",
+      "occurred_at": "2026-10-05T12:12:27.766Z",
+      "sequence_number": 21,
+      "page_offset_ms": 390,
+      "session_offset_ms": 390,
+      "recording_offset_ms": 390,
+      "metadata": {
+        "x": 578,
+        "y": 31,
+        "tag": "button",
+        "form": "form-1",
+        "classes": [],
+        "sensitive": false
+      }
+    },
+    {
+      "id": "2e63499b-01d3-44e0-87fb-64faa11615dc",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_validation_attempt",
+      "occurred_at": "2026-10-05T12:12:27.766Z",
+      "sequence_number": 22,
+      "page_offset_ms": 390,
+      "session_offset_ms": 390,
+      "recording_offset_ms": 390,
+      "metadata": {
+        "form": "form-1",
+        "action": "submit_button"
+      }
+    },
+    {
+      "id": "3dfe57b3-2b54-47cc-9014-ebb9f059864a",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "form_submit",
+      "occurred_at": "2026-10-05T12:12:27.767Z",
+      "sequence_number": 23,
+      "page_offset_ms": 391,
+      "session_offset_ms": 391,
+      "recording_offset_ms": 391,
+      "metadata": {
+        "form": "form-1"
+      }
+    },
+    {
+      "id": "07d3ab40-1775-420e-bd97-f41c0dca3443",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "scroll_milestone",
+      "occurred_at": "2026-10-05T12:12:28.028Z",
+      "sequence_number": 24,
+      "page_offset_ms": 652,
+      "session_offset_ms": 652,
+      "recording_offset_ms": 652,
+      "metadata": {
+        "depth": 100,
+        "milestone": 50
+      }
+    },
+    {
+      "id": "b84e6075-8985-484b-94c2-b041837ad3d1",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "scroll_milestone",
+      "occurred_at": "2026-10-05T12:12:28.028Z",
+      "sequence_number": 25,
+      "page_offset_ms": 652,
+      "session_offset_ms": 652,
+      "recording_offset_ms": 652,
+      "metadata": {
+        "depth": 100,
+        "milestone": 75
+      }
+    },
+    {
+      "id": "8a9399fd-3ae7-4d6a-a1c7-6706dbfe9315",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "scroll_milestone",
+      "occurred_at": "2026-10-05T12:12:28.028Z",
+      "sequence_number": 26,
+      "page_offset_ms": 652,
+      "session_offset_ms": 652,
+      "recording_offset_ms": 652,
+      "metadata": {
+        "depth": 100,
+        "milestone": 90
+      }
+    },
+    {
+      "id": "1fdc6310-68b6-43f0-bbcb-84b980732876",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "scroll_milestone",
+      "occurred_at": "2026-10-05T12:12:28.028Z",
+      "sequence_number": 27,
+      "page_offset_ms": 652,
+      "session_offset_ms": 652,
+      "recording_offset_ms": 652,
+      "metadata": {
+        "depth": 100,
+        "milestone": 100
+      }
+    },
+    {
+      "id": "41317114-241a-4d2e-beab-c8e05fe2f7ee",
+      "project_id": "82b41fd8-c7e7-4feb-89e2-297d9d5ada68",
+      "visitor_id": "8e5bd1a1-6c8d-489f-9222-792de0212301",
+      "tracking_session_id": "66673a79-2b84-4061-9ce4-12c61a6e25fa",
+      "page_id": "27349e57-e684-415c-9778-ccab693e50fc",
+      "event_type": "engagement",
+      "occurred_at": "2026-10-05T12:12:28.134Z",
+      "sequence_number": 28,
+      "page_offset_ms": 758,
+      "session_offset_ms": 758,
+      "recording_offset_ms": 758,
+      "metadata": {
+        "depth": 100,
+        "elapsed_ms": 697,
+        "engaged_ms": 356
+      }
+    }
+  ]
+}

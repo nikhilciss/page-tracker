@@ -14,6 +14,7 @@ export function issueSession(context, config, now = Date.now()) {
     origin: context.origin,
     page_url: context.page_url,
     browser: context.browser,
+    analytics_user_id: context.analytics_user_id || null,
     exp: Math.floor(now / 1000) + config.sessionTtl,
   };
   const body = Buffer.from(JSON.stringify(claims)).toString('base64url');

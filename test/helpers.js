@@ -1,3 +1,4 @@
+import { summarize } from '../src/dashboard.js';
 import { signGrant } from '../src/auth.js';
 import { hashPassword } from '../src/accounts.js';
 import { createVideoService } from '../src/video.js';
@@ -138,11 +139,26 @@ export async function fixture(options = {}) {
       };
     },
   };
+  repository.dashboard = options.dashboard || {
+    async overview() {
+      return {
+        ...summarize([], [], [], [], new Date()),
+        projects: [],
+        options: { browser: [], device: [] },
+        sessions: [],
+        total: 0,
+      };
+    },
+  };
+  if (options.context) repository.context = options.context;
+  if (options.semantic) repository.semantic = options.semantic;
+  if (options.analytics) repository.analytics = options.analytics;
   const config = {
     publicOrigin: 'http://127.0.0.1',
     secret: 'session-test-secret'.repeat(4),
     adminToken: 'admin-test-secret'.repeat(4),
     recordingsDir: directory,
+    videoFormat: options.videoFormat || 'mp4',
     videoMaxSeconds: 10,
     videoFps: 5,
     sessionTtl: 14400,

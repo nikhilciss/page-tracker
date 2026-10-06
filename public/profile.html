@@ -3,9 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Profile & integration · PageTracker</title>
+    <title>Profile & integration · CIS SessionLens</title>
     <link rel="stylesheet" href="/account.css" />
     <script type="module" src="/profile.js"></script>
+    <link rel="icon" type="image/png" href="/assets/cis-logo-black.png" />
   </head>
   <body>
     <header>
@@ -21,7 +22,6 @@
           <h1>Profile &amp; integration</h1>
           <p>Everything you need to connect your website, in one place.</p>
         </div>
-        <a href="/integration.html" class="button secondary">Integration guide ↗</a>
       </div>
       <p id="feedback" role="status"></p>
       <p id="integration-feedback" role="status" aria-live="polite"></p>
@@ -50,11 +50,27 @@
             </p>
             <div class="code-panel">
               <div class="code-head">
-                <span>HTML / BLADE LAYOUT</span><button id="copy-script">Copy script</button>
+                <span>HTML / ANY FRAMEWORK</span><button id="copy-script">Copy script</button>
               </div>
               <pre id="script-snippet"></pre>
             </div>
             <p>No API key, host token endpoint or host .env configuration is required.</p>
+            <p id="recording-policy"></p>
+            <p>
+              Works with Python, JavaScript, PHP and any project that renders HTML. Add the tag in
+              the head, body or a shared layout. Recording starts when the script executes.
+            </p>
+            <p>
+              Visitors receive an anonymous visitor ID automatically. A script alone cannot read
+              your application's logged-in identity; names are not guessed from ordinary form
+              fields. Optional host identity is supported through window.pageTrackerData ({ id, name
+              }) or explicitly marked hidden fields. Identity supplied by the host is not
+              independently verified.
+            </p>
+            <p>
+              Location is an approximate IP lookup. Local/private IP addresses cannot provide a
+              city. New metadata is available for new visits only.
+            </p>
           </section>
         </div>
       </div>

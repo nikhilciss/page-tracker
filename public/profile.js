@@ -12,6 +12,12 @@ try {
     $('#connection-status').textContent = integration.verified
       ? 'Website checked • Ready to record'
       : 'This legacy account has not passed the website check. Contact your administrator.';
+    const policy = integration.recording_policy;
+    $('#recording-policy').textContent = policy
+      ? 'Success-only recording enabled. Required match: ' +
+        [policy.path, policy.selector].filter(Boolean).join(' and ') +
+        '. Install this same tag on every form, validation-error and success page, usually in your shared layout. Submit attempts remain temporary until the rule matches. HTTP 200 alone does not finalize a video.'
+      : 'Recording saves on page actions. Success-only mode can be configured by the tracker administrator using RECORDING_SUCCESS_RULES.';
     $('#script-snippet').textContent =
       '<script src="' + location.origin + '/tracker.js" defer></script>';
   }

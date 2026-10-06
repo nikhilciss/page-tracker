@@ -1,8 +1,10 @@
 import path from 'node:path';
-import { readdir } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import { recordingStore } from './storage.js';
 import { pageSchema, scrubField } from './schema.js';
 import { sanitizePageEvents } from '../shared/page-events.js';
+
+const startTime = (draft) => draft.events[0].timestamp;
 
 export function createPageSessions({ directory, repository, persist }) {
   const pending = recordingStore(path.join(directory, '.pending')),
@@ -43,11 +45,40 @@ export function createPageSessions({ directory, repository, persist }) {
       !draft.events.some((event) => event.type === 2)
     )
       return null;
+    const parts = [];
+    let totalEvents = draft.events.length,
+      totalBytes = Buffer.byteLength(JSON.stringify(draft.events));
+    for (const previous of draft.finish.previous || []) {
+      const prior = await load(previous.claims);
+      if (prior.events.length < previous.expected_count || !prior.events.some((e) => e.type === 2))
+        throw Object.assign(new Error('Earlier page capture is incomplete; retry after upload'), {
+          status: 409,
+        });
+      totalEvents += prior.events.length;
+      totalBytes += Buffer.byteLength(JSON.stringify(prior.events));
+      if (totalEvents > 15000 || totalBytes > 7 * 1024 * 1024)
+        throw Object.assign(new Error('Combined recording exceeds capture limit'), { status: 413 });
+      parts.push(prior);
+    }
+    parts.push(draft);
+    let elapsed = 0;
+    const events = [],
+      segments = [];
+    for (const part of parts) {
+      if (events.length) elapsed += 100;
+      const start = part.events[0].timestamp;
+      segments.push({ session_id: part.claims.id, offset_ms: elapsed });
+      for (const event of part.events)
+        events.push({ ...event, timestamp: startTime(draft) + elapsed + event.timestamp - start });
+      elapsed += Math.max(part.duration_ms, part.events.at(-1).timestamp - start);
+    }
+    if (events.length > 15000 || Buffer.byteLength(JSON.stringify(events)) > 7 * 1024 * 1024)
+      throw Object.assign(new Error('Combined recording exceeds capture limit'), { status: 413 });
     const page = pageSchema.parse({
       format: 'rrweb',
-      duration_ms: draft.duration_ms,
-      truncated: draft.truncated,
-      events: draft.events,
+      duration_ms: elapsed,
+      truncated: parts.some((p) => p.truncated),
+      events,
     });
     const result = await persist(draft.claims, {
       scope: 'page',
@@ -57,15 +88,16 @@ export function createPageSessions({ directory, repository, persist }) {
       user_name: draft.user_name || null,
       page_title: draft.page_title,
       save_reason: draft.finish.reason,
-      duration_ms: draft.duration_ms,
-      truncated: draft.truncated,
+      duration_ms: page.duration_ms,
+      truncated: page.truncated,
+      recording_segments: segments,
       fields: draft.fields,
       events: [],
       page,
     });
     clearTimeout(timers.get(draft.claims.id));
     timers.delete(draft.claims.id);
-    await pending.remove(draft.claims.id);
+    for (const part of parts) await pending.remove(part.claims.id);
     return result;
   }
   function exitFallback(claims) {
@@ -87,7 +119,54 @@ export function createPageSessions({ directory, repository, persist }) {
     timer.unref();
     timers.set(claims.id, timer);
   }
+  async function pendingParts(account, ids) {
+    const parts = [];
+    for (const id of [...new Set(ids)]) {
+      if (await repository.findSession(id, 'page')) continue;
+      try {
+        const info = await stat(path.join(directory, '.pending', id + '.capture.gz'));
+        const draft = await pending.read(id);
+        if (draft.claims.account_id !== account || !draft.events.some((e) => e.type === 2))
+          continue;
+        parts.push({
+          claims: draft.claims,
+          expected_count: draft.events.length,
+          duration_ms: draft.duration_ms,
+          idle: Date.now() - info.mtimeMs >= 30000,
+        });
+        if (parts.length > 20)
+          throw Object.assign(new Error('Too many pending pages to recover together'), {
+            status: 413,
+          });
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+    }
+    return parts;
+  }
   return {
+    async pendingSummary(account, ids) {
+      const parts = await pendingParts(account, ids);
+      return { pages: parts.length, recoverable: parts.length > 0 && parts.every((p) => p.idle) };
+    },
+    async recoverCaptured(account, ids) {
+      const parts = await pendingParts(account, ids);
+      if (!parts.length)
+        throw Object.assign(new Error('No pending page capture is available'), { status: 409 });
+      if (!parts.every((p) => p.idle))
+        throw Object.assign(
+          new Error(
+            'Capture is still active. Close the tracked pages and wait 30 seconds before recovering.',
+          ),
+          { status: 409 },
+        );
+      const last = parts.pop();
+      return this.finish(last.claims, {
+        reason: 'manual',
+        expected_count: last.expected_count,
+        previous: parts,
+      });
+    },
     checkpoint(claims, body) {
       return locked(claims.id, async () => {
         const existing = await repository.findSession(claims.id, 'page');
@@ -152,7 +231,11 @@ export function createPageSessions({ directory, repository, persist }) {
           return { recording_id: existing.id, duplicate: true };
         }
         const draft = await load(claims);
-        draft.finish = { reason: body.reason, expected_count: body.expected_count };
+        draft.finish = {
+          reason: body.reason,
+          expected_count: body.expected_count,
+          previous: body.previous || [],
+        };
         await pending.write(claims.id, draft);
         const result = await commit(draft);
         if (!result && body.reason === 'pagehide') exitFallback(claims);

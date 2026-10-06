@@ -7,10 +7,10 @@
     'Segoe UI',
     sans-serif;
   color: #17243d;
-  background: #f5f7fb;
+  background: #f5f4f6;
   --ink: #17243d;
   --muted: #758199;
-  --brand: #5364e8;
+  --brand: #af110e;
   --line: #e7ebf3;
   --sidebar: 244px;
 }
@@ -50,8 +50,8 @@ button,
 }
 button:hover,
 .button:hover {
-  background: #4050d1;
-  box-shadow: 0 4px 12px #5364e820;
+  background: #8d0e0b;
+  box-shadow: 0 4px 12px #af110e20;
 }
 button:disabled {
   opacity: 0.45;
@@ -114,8 +114,8 @@ main {
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--sidebar);
-  background: #111b31;
-  color: #a5b0c7;
+  background: #182024;
+  color: #b8bdc0;
   display: flex;
   flex-direction: column;
   padding: 30px 20px;
@@ -130,23 +130,25 @@ main {
   font-weight: 700;
   letter-spacing: -0.5px;
 }
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 35px;
-  height: 35px;
-  background: linear-gradient(135deg, #6d7cfa, #6970dd);
-  color: white;
-  border-radius: 10px;
-  font-size: 22px;
-  box-shadow: 0 5px 20px #0003;
+.brand-logo {
+  display: block;
+  width: 52px;
+  height: 34px;
+  flex: 0 0 52px;
+  object-fit: contain;
+}
+.brand-name {
+  font-size: 16px;
+  line-height: 1.25;
+  white-space: nowrap;
+  letter-spacing: -0.3px;
 }
 .brand small {
   display: block;
-  font-size: 9px;
-  letter-spacing: 2.2px;
+  font-size: 8px;
+  letter-spacing: 1.5px;
   font-weight: 500;
-  color: #8b97b2;
+  color: #adb5b9;
   margin-top: 5px;
 }
 .nav-label {
@@ -154,7 +156,7 @@ main {
   letter-spacing: 1.8px;
   font-weight: 700;
   margin: 46px 14px 13px;
-  color: #697891;
+  color: #99a4aa;
 }
 .sidebar nav a {
   display: flex;
@@ -163,15 +165,15 @@ main {
   padding: 13px 14px;
   border-radius: 8px;
   margin: 5px 0;
-  color: #a7b3ca;
+  color: #c6cbce;
   font-weight: 500;
 }
 .sidebar nav a:hover {
-  background: #1d2a43;
+  background: #2c3438;
   color: white;
 }
 .sidebar nav a.active {
-  background: #5667e8;
+  background: #af110e;
   color: white;
   box-shadow: 0 5px 16px #0002;
 }
@@ -183,20 +185,20 @@ main {
 .sidebar-foot {
   margin-top: auto;
   padding: 22px 14px 0;
-  border-top: 1px solid #253047;
+  border-top: 1px solid #394146;
   font-size: 12px;
   line-height: 1.8;
 }
 .sidebar-foot strong {
-  color: #dbe2f1;
+  color: #eceeee;
   display: block;
 }
 .avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #eef0ff;
-  color: #5965d8;
+  background: #fceeed;
+  color: #af110e;
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -288,8 +290,8 @@ small,
   width: 36px;
   height: 36px;
   border-radius: 9px;
-  background: #eef0ff;
-  color: #5c6ce4;
+  background: #fceeed;
+  color: #af110e;
   display: grid;
   place-items: center;
   font-size: 18px;
@@ -305,8 +307,8 @@ small,
   font-size: 11px;
 }
 .notice {
-  background: #edf1ff;
-  border: 1px solid #dbe2ff;
+  background: #fff1ef;
+  border: 1px solid #f1d3d1;
   border-radius: 11px;
   padding: 18px 22px;
   display: flex;
@@ -335,7 +337,7 @@ small,
   padding: 6px 10px;
   font-size: 11px;
   font-weight: 650;
-  background: #eef1fa;
+  background: #f7efee;
   color: #66748e;
   white-space: nowrap;
 }
@@ -379,7 +381,7 @@ td {
 }
 td:first-child a {
   font-family: ui-monospace, monospace;
-  color: #5263d3;
+  color: #af110e;
   font-weight: 600;
 }
 td:nth-child(3) {
@@ -406,7 +408,7 @@ tbody tr:hover {
 .empty-symbol {
   font-size: 36px;
   display: block;
-  color: #8c9be0;
+  color: #d88c88;
   margin-bottom: 16px;
 }
 .empty h3 {
@@ -466,7 +468,7 @@ input {
   min-width: 0;
 }
 input:focus {
-  border-color: #8793ec;
+  border-color: #c6504d;
 }
 .code-panel {
   border: 1px solid var(--line);
@@ -507,7 +509,7 @@ pre {
   overflow-wrap: anywhere;
   padding: 18px;
   color: #405678;
-  background: #f5f7fb;
+  background: #f5f4f6;
   border-radius: 8px;
 }
 code {
@@ -531,8 +533,8 @@ code {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: #edf0ff;
-  color: #6070df;
+  background: #fceeed;
+  color: #af110e;
   font-size: 12px;
   margin-right: 8px;
 }
@@ -563,14 +565,14 @@ dd {
 video {
   width: 100%;
   max-height: 70vh;
-  background: #111b31;
+  background: #182024;
   border-radius: 10px;
   margin: 16px 0;
 }
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 3px solid #a8b1f1;
+  outline: 3px solid #e8a6a3;
   outline-offset: 3px;
 }
 [hidden] {
@@ -583,7 +585,7 @@ input:focus-visible {
   background: white;
 }
 .auth-art {
-  background: radial-gradient(ellipse at 80% 20%, #334a83, transparent 65%), #111d35;
+  background: radial-gradient(ellipse at 80% 20%, #482624, transparent 65%), #182024;
   color: #fff;
   padding: 55px 12%;
   display: flex;
@@ -593,9 +595,11 @@ input:focus-visible {
   overflow: hidden;
 }
 .auth-art .brand {
-  position: absolute;
-  top: 44px;
-  left: 12%;
+  position: static;
+  margin-bottom: 32px;
+}
+.auth-mobile-logo {
+  display: none;
 }
 .auth-art h2 {
   font-size: 40px;
@@ -668,8 +672,23 @@ input:focus-visible {
   }
 }
 @media (max-width: 1100px) {
+  .sidebar .brand-logo {
+    width: 40px;
+    height: 28px;
+    flex-basis: 40px;
+  }
+  .sidebar .brand {
+    gap: 9px;
+  }
+  .sidebar .brand-name {
+    font-size: 13px;
+  }
+  .sidebar .brand small {
+    font-size: 9px;
+    letter-spacing: 1.2px;
+  }
   :root {
-    --sidebar: 212px;
+    --sidebar: 244px;
   }
   main {
     padding: 0 24px;
@@ -688,6 +707,13 @@ input:focus-visible {
   }
 }
 @media (max-width: 800px) {
+  .auth-mobile-logo {
+    display: block;
+    width: 80px;
+    height: 48px;
+    object-fit: contain;
+    margin-bottom: 20px;
+  }
   .shell header,
   .shell main {
     margin-left: 0;

@@ -1,9 +1,17 @@
+import { contextRepository } from './context.js';
+import { dashboardRepository } from './dashboard.js';
+import { semanticRepository } from './semantic-repository.js';
+import { analyticsRepository } from './analytics-repository.js';
 import mysql from 'mysql2/promise';
 
 export function createRepository(config) {
   const pool = mysql.createPool(config.db);
   return {
     pool,
+    context: contextRepository(pool),
+    dashboard: dashboardRepository(pool),
+    analytics: analyticsRepository(pool),
+    semantic: semanticRepository(pool),
     async integration(id) {
       const [rows] = await pool.execute(
         'SELECT domain_verified_at,key_version FROM accounts WHERE id=?',

@@ -8,7 +8,7 @@ test('signup requires HTTP 200 before creating account; recording needs no API k
   const f = await fixture({ verifier: verifyDomain });
   let code = 503;
   const host = createServer((req, res) => {
-    assert.equal(req.url, '/');
+    assert.ok(['/', '/other'].includes(req.url));
     res.writeHead(code, { Location: '/other' });
     res.end('page');
   });
@@ -68,4 +68,26 @@ test('availability checks reject private destinations unless explicitly allowed'
   for (const ip of ['127.0.0.1', '10.0.0.1', '169.254.169.254', '192.168.1.1', '::1'])
     assert.equal(publicIPv4(ip), false);
   await assert.rejects(verifyDomain('http://127.0.0.1', null, 'http'));
+});
+
+test('availability follows bounded same-origin redirects and rejects foreign redirects', async () => {
+  let mode = 'login';
+  const host = createServer((req, res) => {
+    if (mode === 'login' && req.url === '/login') return res.end('Login');
+    res.writeHead(302, {
+      Location: mode === 'foreign' ? 'http://example.test/login' : mode === 'loop' ? '/' : '/login',
+    });
+    res.end();
+  });
+  await new Promise((r) => host.listen(0, '127.0.0.1', r));
+  const origin = 'http://127.0.0.1:' + host.address().port;
+  try {
+    assert.equal(await verifyDomain(origin, null, 'http', [origin]), true);
+    mode = 'foreign';
+    assert.equal(await verifyDomain(origin, null, 'http', [origin]), false);
+    mode = 'loop';
+    assert.equal(await verifyDomain(origin, null, 'http', [origin]), false);
+  } finally {
+    await new Promise((r) => host.close(r));
+  }
 });

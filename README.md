@@ -4,7 +4,7 @@ Register your reachable website and include the widget on your page. The widget 
 
 ## Signup and integration
 
-Signup checks the registered website with an HTTP GET to its root. Only a direct HTTP 200 completes signup and creates an account/login session. Redirects, failed connections and non-200 responses reject signup without creating an account. This is an availability check, not proof of ownership.
+Signup checks the registered website with an HTTP GET to its root. HTTP 200 completes signup and creates an account/login session. Up to three same-origin redirects (such as a login redirect) are followed. Cross-origin redirects, failed connections and non-200 final responses reject signup without creating an account. This is an availability check, not proof of ownership.
 
 After signup, open **Profile & integration** and copy the script tag. No API key, host .env variables, host token endpoint or CSRF meta tag is needed by the tracker.
 
@@ -129,18 +129,14 @@ Signup stores name, normalized email, a salted scrypt password hash, and the exa
 
 After login, the dashboard lists only recordings whose `account_id` matches the logged-in account. A session link opens `/session.html?id=<recording-id>`, with session/recording IDs, account name, company origin, visitor name/ID, page URL/title, browser user agent, time, duration, capture counts, save trigger, and video playback/download/retry.
 
-Pass an optional visitor identity from the host project:
+Use the same plain tag in any project that renders HTML:
 
 ```html
-<script
-  src="https://tracker.example.com/tracker.js"
-  data-user-id="123"
-  data-user-name="Alex"
-  defer
-></script>
+<script src="https://tracker.example.com/tracker.js" defer></script>
 ```
 
-HTML-escape dynamically inserted values in your PHP/template code. The visitor identity is host-provided metadata, not authenticated proof. Without it, the visitor is shown as Guest/Not provided.
+No username, user ID, query parameter or framework-specific template code is required.
+Visitors are assigned anonymous analytics IDs automatically.
 
 Upgrade steps: stop the server, run `npm run db:init`, then `npm start`. The migration preserves existing recordings and adds nullable ownership/metadata columns. **Historical recordings remain unassigned and hidden from new accounts**; do not automatically assign them based on a signup domain. A trusted operator can explicitly assign verified historical recordings to the correct account in MySQL. Old in-flight tracking tokens must be refreshed by reloading the host page.
 
@@ -191,19 +187,13 @@ No browser script can guarantee an upload after abrupt process termination, offl
 
 ## Identity and privacy
 
-Optionally identify a logged-in visitor on the script:
+The plain script tag records anonymous visitors without host authentication integration.
+It cannot automatically access a Python, JavaScript, PHP or other application's authenticated
+identity. It does not infer names from form inputs or inspect authentication tokens.
+Existing optional host-provided identity attributes remain supported for compatibility;
+they are metadata, not authenticated proof, and are not required for recording.
 
-```html
-<script
-  src="https://tracker.yourdomain.com/tracker.js"
-  data-user-id="opaque-user-123"
-  defer
-></script>
-```
-
-Without a user ID the recording is anonymous. This value is application-provided metadata, not authenticated identity. `data-user-id` on the page's html/body is also supported.
-
-Load the script only after any consent required by your site's policy. It has no visual interface, permission prompt, cookies, persistent browser storage, or console logging. Passwords, hidden/file inputs, common credential/payment fields, and explicit masks are redacted. Ordinary page text and non-sensitive inputs, including inputs outside forms, are captured.
+Load the script only after any consent required by your site's policy. It has no visual interface, permission prompt or console logging. The analytics foundation uses optional first-party localStorage for anonymous visitor continuity; set data-analytics-storage="none" to disable persistent identity storage. Passwords, hidden/file inputs, common credential/payment fields, and explicit masks are redacted. Ordinary page text and non-sensitive inputs, including inputs outside forms, are captured.
 
 ```html
 <input name="private_reference" data-recording-mask />
@@ -296,3 +286,187 @@ Open /master/admin/login on the tracker service. The initial login is admin@admi
 After login, /master/admin lists registered companies, their domain, email, and recording count. Click a company to browse its sessions, then a session ID for details and MP4 playback/download. Master and company logins share the session cookie: logging into one replaces the current login in that browser.
 
 Master access is checked from the MySQL is_master role on every authenticated request. Signup cannot grant this role. Normal accounts cannot access company listings or other companies' recordings. The master account has no tracking origin. Existing unassigned recordings are not automatically attached to companies.
+
+## Analytics foundation (increment 1)
+
+The additive migration creates `projects`, `visitors`, `tracking_sessions` and
+`session_pages`. Existing recording IDs, login sessions, MP4 files and routes remain
+unchanged. Run `npm run db:init` before starting the updated server.
+
+The page widget initializes analytics independently of recording finalization.
+A refreshed or abandoned page can therefore have an analytics record without an
+MP4. Semantic activity now includes clicks, scroll milestones, forms, visibility,
+SPA page views and bounded engagement samples. Observed span and engagement remain
+estimates, not guaranteed actual dwell time. Reporting/dashboard implementation is
+separately gated for review.
+
+A signed, project-scoped anonymous visitor credential is stored in the host site's
+localStorage. Set `data-analytics-storage="none"` on the script to use memory-only
+identity. Blocked storage also falls back to memory. Identity is not fingerprinted
+and is not proof of an individual person. Existing host consent/loading policies
+must include this storage behavior.
+
+`ANALYTICS_SESSION_TIMEOUT_SECONDS=1800` configures the default inactivity timeout.
+A project's nullable `inactivity_timeout_seconds` overrides that default for new
+sessions. Existing sessions retain their assigned timeout.
+
+Definitions: [analytics metric dictionary](docs/analytics-metrics.md).
+Isolated MySQL regression check: `node scripts/test-analytics-db.js` (requires
+permission to create/drop its own randomly named test database).
+
+## Semantic activity (increment 2)
+
+Run `npm run db:init` before restarting. The additive migration adds
+`semantic_streams` and `session_events`, and allows multiple SPA page views per
+recording. The recording pipeline and MP4 finalization rules are unchanged.
+
+[Implementation, sample JSON, reporting SQL and dashboard proposal](docs/semantic-increment-review.md).
+
+Capture sends no raw field values in semantic events. For custom sensitive fields,
+use `data-recording-mask` or `data-analytics-redact-selectors` on the tracker script.
+Only explicit `data-analytics-label` text is eligible for click labels. A browser
+submit remains an attempt; call `UniversalTracker.confirmFormSuccess(formElement)`
+only after your application confirms success.
+
+New endpoints: `POST /api/track/analytics/events` and authenticated
+`GET /api/admin/sessions/:id/events?offset=0`. Session/event reads remain account-scoped.
+The response contains at most 200 timeline events with a next offset when applicable.
+
+Pending sanitized event batches use bounded tab-local sessionStorage, unless
+`data-analytics-storage="none"` is set. This supplements memory retries; it cannot
+guarantee recovery after tab closure, storage clearing or process termination.
+
+### Analytics dashboard
+
+The workspace includes semantic analytics, filters, a session journey/timeline and existing MP4 playback. See [dashboard definitions and limits](docs/dashboard.md). This increment adds read-only reporting; no migration or tracking configuration change is needed.
+
+### Session identity, location and replay format
+
+New visits store a tenant-scoped document context independently of video finalization. Run `npm run db:init` after updating. The additive `recording_contexts` table is keyed by `(account_id, recording_session_id)` and references accounts; document sessions/pages associate using the same signed recording ID. It stores explicit host identity, server-observed IP, approximate IP location, browser user agent, browser timezone/language, viewport and referrer origin. Query strings, cookies, passwords and form values are not used for this context.
+
+Profile & integration provides a universal plain script tag without identity parameters.
+Browser and available network/location metadata are captured automatically; logged-in names
+cannot be discovered reliably without explicit host integration. Old sessions cannot recover
+identity or network metadata that was never captured.
+
+IP location uses local GeoIP-lite/GeoLite data from MaxMind, not a third-party lookup request or browser GPS. Local/private IPs show location unavailable. IP locations are approximate and may reflect VPN/proxy egress; behind a reverse proxy, configure `TRUST_PROXY_HOPS` only for the actual trusted deployment topology. The bundled dataset is a snapshot: update the GeoLite data using your MaxMind license according to https://github.com/geoip-lite/node-geoip#update-the-datafiles before relying on production locations. This product includes GeoLite data created by MaxMind, available from https://www.maxmind.com/. The installed GeoIP package's database updater has dependency audit findings in its IP-address helper; the tracker does not invoke that updater or its HTML/IP parsing helpers at runtime and validates observed IPs with Node's `net.isIP` before lookup.
+
+New videos default to VP9 WebM (`VIDEO_FORMAT=webm`). `VIDEO_FORMAT=mp4` selects the previous H.264 encoder. Existing MP4 files are preserved and served with their original MIME type/extension. WebM uses quality-based compression; size savings vary with page activity. The detail page provides Details, Session replay and Event log tabs; it does not issue certificates or verify consent. Downloads, byte-range playback, retries and retention support both formats.
+
+### Server-side authenticated identity helper
+
+`src/authenticated-identity.js` exports `authenticatedIdentity(account)`, returning only
+`{ id, name }`. Pass the account resolved by your server's validated session/database
+adapter after authentication. Names must be strings of at most 160 characters before
+trimming and must remain nonempty after trimming. Invalid identity throws
+`AuthenticationError` (`AUTHENTICATION_REQUIRED`, HTTP 401). The helper does not mutate
+accounts or return credentials.
+
+The function has no Express, HTTP, cookie or storage dependencies. This JavaScript
+implementation can be reused in JavaScript server frameworks. Python, Java, PHP and
+.NET must implement the same small validation contract in their own language and
+resolve their own authenticated sessions; a JavaScript file cannot read those runtimes'
+sessions automatically. Never pass request bodies, query parameters, headers, browser
+storage or client-provided identity objects to this helper.
+
+The existing portal still uses its opaque session cookie solely to locate and validate
+the database session. The username comes from the associated database account, never
+from that cookie. Login, signup and `/api/auth/me` responses use the helper while retaining
+their existing response fields. Signup first persists and reloads the account; login
+verifies the existing password before using its database account. This does not add
+cross-site visitor identification or change the public tracker/frontend.
+
+### Success-only recordings across validation reloads
+
+Configure explicit rules in the **tracker server's** `.env` and restart it:
+
+```dotenv
+RECORDING_SUCCESS_RULES='{"https://yourwebsite.com":{"path":"/thank-you","selector":".submission-success"}}'
+```
+
+Rules are keyed by exact registered origin. `path` is an exact pathname (no query/hash),
+`selector` must match a visible element; when both are supplied both must match. These
+are browser-observed signals configured by the operator, not verified backend outcomes.
+A 200 or redirect response alone never means success. Origins without rules retain
+existing action-triggered recording. The profile page shows the active rule.
+
+Keep the same plain script tag on **every form, validation-error and success page**,
+usually via a shared layout. No framework-specific template logic is needed. A script
+only on the original form cannot observe an uninstrumented destination. This tracker
+change does not edit host project files or rewrite native forms into AJAX.
+
+In success mode a submit attempt checkpoints without stopping capture. Same-tab,
+same-origin page reloads continue the journey via sessionStorage containing only scoped
+signed recording references/counts, never form values. A matching success page/element
+after a submit attempt finalizes one combined video with all available page snapshots.
+For AJAX integrations, `UniversalTracker.confirmFormSuccess(form)` also finalizes after
+the host explicitly reports success. `save()`, `navigate()` and `reload()` only checkpoint
+in success mode. Normal browser refresh/closure does not finalize.
+
+Continuation expires after 30 minutes without an acknowledged checkpoint, or earlier
+when a recording token expires. Limits: 20 documents, 15,000 combined events and 7 MiB
+combined event data; the existing encoder duration cap still applies. Failed/incomplete
+assembly retains private captures for retry instead of silently dropping earlier pages.
+Blocked tab storage, cross-origin redirects and pages without the script cannot provide
+reliable continuation. Duplicating a tab may copy its browser sessionStorage; start a
+fresh independently opened tab for a separate journey. Run the existing pruning job to
+remove abandoned drafts. Earlier-page semantic events remain available in the timeline;
+video seeking is currently offered for the final document with its combined-video offset.
+
+When a completion signal never arrives, Session replay shows the number of pending
+captures. An authenticated owner can choose **Generate captured replay** after closing
+the tracked pages and waiting 30 seconds without checkpoints. This explicitly ends and
+combines the available drafts into a manual recording; it does not assert successful
+submission. Recovery is tenant-scoped and CSRF-protected. Active captures are rejected,
+and existing success-only auto-finalization rules are unchanged.
+
+### Optional host-provided visitor identity (any framework)
+
+The tracker supports an explicit data contract, not server-session discovery. On the
+host page, expose only the authenticated visitor's public ID and display name as the
+string properties `id` and `name` of `window.pageTrackerData`. Supply the object before
+the tracker loads when possible. Use your framework's safe JSON serialization when
+embedding server values; do not concatenate raw user strings into HTML or JavaScript.
+Do not include passwords, tokens, session data or API keys. Extra object keys are ignored.
+
+Alternatively, explicitly mark two hidden inputs with `data-page-tracker-user-id` and
+`data-page-tracker-user-name`, with their HTML-escaped values populated by the host.
+The tracker does not infer identity from arbitrary `name`, `username`, email or other
+form inputs. Hidden inputs with credential-like names/IDs or recording mask/ignore
+markers are excluded. Ordinary capture still redacts all hidden inputs.
+
+Precedence is whole-source: an explicitly present `window.pageTrackerData` object,
+then marked hidden fields, then legacy form/script/html/body data attributes. Values
+from different sources are not combined. Duplicate marked fields are ambiguous and
+produce anonymous identity. IDs and names must be strings of at most 160 characters;
+blank/invalid values become null, without string coercion or truncation.
+
+For late login/account changes, replace the object and dispatch the
+`page-tracker:identity-change` event on window or document. Event detail is ignored;
+the resolver rereads the explicit data source. Page mode also checks on periodic
+checkpoints; legacy form mode rereads on submit. For logout set
+`window.pageTrackerData = null` and dispatch the same event. Null is authoritative
+and prevents stale hidden fields/attributes from restoring the old identity.
+
+Identity updates use the existing origin-bound recording token and account scope.
+Context updates preserve server-observed IP/browser data. Session details use the
+latest captured document context and retain the “not independently verified” label.
+Recordings retain the identity snapshot at finalization; old recordings are not
+backfilled. This feature does not authenticate the visitor, change tenant authorization,
+or alter the Page Tracker account login helper. No identity is stored in browser storage.
+Host projects must supply the object/marked fields; this repository change does not
+modify any host project or make identity appear when no host data is provided.
+
+### Host user IDs and analytics visitor counts
+
+At each new recording initialization, an explicit host `user_id` creates a stable
+analytics visitor scoped to the owning account and page origin. Two host user IDs
+in the same browser therefore get separate visitors and analytics sessions. Names
+alone do not identify users. The same host user ID reuses its own active session
+within the configured inactivity timeout. After logout, omit/clear the host ID;
+an identified visitor credential is not accepted as an anonymous identity.
+
+The host must supply the ID through the existing identity integration. Tracker
+cannot read server-side login sessions automatically. Existing historical records
+are not reassigned. In-page identity metadata updates do not split an already
+initialized recording; this rule takes effect at the next tracked page initialization.

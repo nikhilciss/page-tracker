@@ -1,3 +1,6 @@
+import { captureContext, identityContext } from './context.js';
+import { dashboardRoutes } from './dashboard.js';
+import { analyticsRoutes } from './analytics.js';
 import express from 'express';
 import { domainAccess } from './domain-access.js';
 import { accountAuth } from './accounts.js';
@@ -9,6 +12,7 @@ import { root } from './config.js';
 import { issueSession, verifySession } from './auth.js';
 import {
   initSchema,
+  identitySchema,
   submissionSchema,
   scrubSubmission,
   checkpointSchema,
@@ -65,12 +69,18 @@ export function createApp({ config, repository, store, videos, logger = console,
     cors({
       origin: true,
       methods: ['POST', 'OPTIONS'],
-      allowedHeaders: ['Content-Type'],
+      allowedHeaders: ['Content-Type', 'Content-Encoding'],
       maxAge: 600,
     }),
     rateLimit({ windowMs: 60000, limit: 120, standardHeaders: 'draft-8', legacyHeaders: false }),
-    express.json({ limit: '8mb', type: ['application/json', 'text/plain'] }),
+    (req, res, next) =>
+      (req.path === '/analytics/events'
+        ? express.json({ limit: '64kb', type: ['application/json', 'text/plain'] })
+        : express.json({ limit: '8mb', type: ['application/json', 'text/plain'] }))(req, res, next),
   );
+
+  analyticsRoutes({ app, repository, config, requireLogin });
+  dashboardRoutes({ app, repository, requireLogin, videos, pages });
 
   app.post('/api/track/init', async (req, res) => {
     const parsed = initSchema.safeParse(req.body);
@@ -80,18 +90,25 @@ export function createApp({ config, repository, store, videos, logger = console,
       return res.status(400).json({ error: 'Page origin mismatch' });
     // Query strings and fragments frequently contain credentials or personal information.
     const page_url = `${url.origin}${url.pathname}`;
-    res.status(201).json(
-      issueSession(
-        {
-          origin: url.origin,
-          page_url,
-          account_id: req.originOwner.id,
-          key_version: req.originOwner.key_version,
-          browser: (req.get('User-Agent') || '').slice(0, 1024),
-        },
-        config,
-      ),
+    const session = issueSession(
+      {
+        origin: url.origin,
+        page_url,
+        account_id: req.originOwner.id,
+        key_version: req.originOwner.key_version,
+        browser: (req.get('User-Agent') || '').slice(0, 1024),
+        analytics_user_id: identityContext(parsed.data).user_id,
+      },
+      config,
     );
+    await repository.context?.save(
+      req.originOwner.id,
+      session.session_id,
+      captureContext(req, parsed.data),
+    );
+    res
+      .status(201)
+      .json({ ...session, recording_policy: config.recordingPolicies?.[url.origin] || null });
   });
   app.post('/api/track/submit', async (req, res) => {
     const parsed = submissionSchema.safeParse(req.body);
@@ -113,12 +130,15 @@ export function createApp({ config, repository, store, videos, logger = console,
     } catch {
       return res.status(400).json({ error: 'Invalid page snapshot' });
     }
+    Object.assign(body, identityContext(body));
+    await repository.context?.updateIdentity?.(claims.account_id, claims.id, body);
     const result = await persist(claims, body);
     res.status(result.duplicate ? 200 : 201).json(result);
   });
 
   for (const [action, schema] of [
     ['checkpoint', checkpointSchema],
+    ['identity', identitySchema],
     ['finish', finishSchema],
   ]) {
     app.post(`/api/track/page/${action}`, async (req, res) => {
@@ -135,8 +155,34 @@ export function createApp({ config, repository, store, videos, logger = console,
       } catch {
         return res.status(401).json({ error: 'Invalid or expired session' });
       }
+      const previous = [];
       try {
-        const result = await pages[action](claims, parsed.data);
+        for (const part of parsed.data.previous || []) {
+          const prior = verifySession(part.token, req.get('Origin'), config);
+          if (
+            prior.account_id !== claims.account_id ||
+            prior.key_version !== claims.key_version ||
+            prior.id === claims.id ||
+            previous.some((p) => p.claims.id === prior.id)
+          )
+            throw new Error('Invalid continuation');
+          previous.push({ claims: prior, expected_count: part.expected_count });
+        }
+      } catch {
+        return res.status(401).json({ error: 'Invalid or expired recording continuation' });
+      }
+      try {
+        if (action === 'identity') {
+          await repository.context?.updateIdentity?.(claims.account_id, claims.id, parsed.data);
+          return res.json({ status: 'updated' });
+        }
+        const body =
+          action === 'checkpoint'
+            ? { ...parsed.data, ...identityContext(parsed.data), previous }
+            : { ...parsed.data, previous };
+        const result = await pages[action](claims, body);
+        if (action === 'checkpoint')
+          await repository.context?.updateIdentity?.(claims.account_id, claims.id, body);
         res.status(result.pending ? 202 : 200).json(result);
       } catch (error) {
         if (error.status)
@@ -185,6 +231,23 @@ export function createApp({ config, repository, store, videos, logger = console,
       next();
     },
   );
+  app.post('/api/admin/analytics/sessions/:id/recover-recording', async (req, res) => {
+    if (!/^[a-f0-9-]{36}$/i.test(req.params.id))
+      return res.status(404).json({ error: 'Session not found' });
+    const session = await repository.analytics.get(req.account.id, req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    try {
+      res.json(
+        await pages.recoverCaptured(
+          req.account.id,
+          session.pages.map((p) => p.recording_session_id),
+        ),
+      );
+    } catch (error) {
+      if (error.status) return res.status(error.status).json({ error: error.message });
+      throw error;
+    }
+  });
   app.get('/api/admin/recordings', async (req, res) => {
     const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
     const offset = Math.min(1000000, Math.max(0, Number.parseInt(req.query.offset, 10) || 0));
@@ -201,6 +264,7 @@ export function createApp({ config, repository, store, videos, logger = console,
         : await repository.accountById(row.account_id);
     res.json({
       recording: req.recording,
+      context: (await repository.context?.get(row.account_id, row.session_id)) || null,
       account_name: owner?.name || 'Unassigned',
       company_origin: owner?.company_origin || new URL(row.page_url).origin,
     });
@@ -226,8 +290,9 @@ export function createApp({ config, repository, store, videos, logger = console,
       return res.status(404).json({ error: 'Recording not found' });
     if (!videos || (await videos.status(req.params.id)).status !== 'ready')
       return res.status(409).json({ error: 'Video is not ready' });
-    res.type('video/mp4');
-    res.set('Content-Disposition', `inline; filename="${req.params.id}.mp4"`);
+    const format = videos.file(req.params.id).endsWith('.webm') ? 'webm' : 'mp4';
+    res.type('video/' + format);
+    res.set('Content-Disposition', `inline; filename="${req.params.id}.${format}"`);
     res.sendFile(videos.file(req.params.id));
   });
   // Demo destination intentionally discards the original form values.

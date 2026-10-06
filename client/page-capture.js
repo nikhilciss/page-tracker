@@ -2,7 +2,7 @@ import { record } from 'rrweb';
 import { createPageSanitizer, sensitiveElement } from '../shared/page-events.js';
 
 // Encrypted page event buffer; page mode uploads incremental checkpoints.
-export function startPageCapture(keyPromise) {
+export function startPageCapture(keyPromise, redactionSelector = '') {
   const sanitize = createPageSanitizer(),
     encoder = new TextEncoder(),
     decoder = new TextDecoder();
@@ -64,9 +64,13 @@ export function startPageCapture(keyPromise) {
       recordCrossOriginIframes: false,
       slimDOMOptions: 'all',
       blockSelector: '[data-recording-ignore], iframe, object, embed',
-      maskTextSelector: '[data-recording-mask]',
+      maskTextSelector:
+        '[data-recording-mask]' + (redactionSelector ? ',' + redactionSelector : ''),
       maskAllInputs: true,
-      maskInputFn: (value, element) => (sensitiveElement(element) ? '[REDACTED]' : value),
+      maskInputFn: (value, element) =>
+        sensitiveElement(element) || (redactionSelector && element.closest(redactionSelector))
+          ? '[REDACTED]'
+          : value,
       sampling: { mousemove: 100, mousemoveCallback: 100, scroll: 100, input: 'all' },
       errorHandler: () => true,
     });

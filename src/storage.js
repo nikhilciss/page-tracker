@@ -61,6 +61,8 @@ export function recordingStore(directory) {
           '.capture.gz',
           '.json.gz',
           '.mp4',
+          '.webm',
+          '.webm.tmp.webm',
           '.mp4.tmp.mp4',
           '.tmp.mp4',
           '.video',

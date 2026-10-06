@@ -1,3 +1,6 @@
+import { migrateContext } from '../src/context.js';
+import { migrateSemantic } from '../src/semantic-migration.js';
+import { migrateAnalytics } from '../src/analytics-schema.js';
 import { randomUUID } from 'node:crypto';
 import { hashPassword } from '../src/accounts.js';
 import mysql from 'mysql2/promise';
@@ -93,6 +96,9 @@ try {
   await connection.query(
     'CREATE TABLE IF NOT EXISTS used_recording_grants (id CHAR(36) PRIMARY KEY, expires_at DATETIME NOT NULL, KEY grant_expiry(expires_at)) ENGINE=InnoDB',
   );
+  await migrateAnalytics(connection);
+  await migrateSemantic(connection);
+  await migrateContext(connection);
   console.info(`Database ${database} is ready.`);
 } finally {
   await connection.end();

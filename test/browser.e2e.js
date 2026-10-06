@@ -96,6 +96,7 @@ test('legacy opt-in form integration', { timeout: 90000 }, async (t) => {
     await page.getByLabel('Email', { exact: true }).fill('owner@example.test');
     await page.getByLabel('Password', { exact: true }).fill('test-password-1234');
     await page.getByRole('button', { name: 'Log in', exact: true }).click();
+    await page.locator('#legacy summary').click();
     await page.locator('#recordings a').first().waitFor();
     assert.equal(await page.getByRole('button', { name: 'Play ↗' }).count(), 0);
   });

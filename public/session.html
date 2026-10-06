@@ -3,9 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Session details · Page Tracker</title>
+    <title>Session details · CIS SessionLens</title>
     <link rel="stylesheet" href="/account.css" />
+    <link rel="stylesheet" href="/analytics.css" />
     <script type="module" src="/session.js"></script>
+    <link rel="icon" type="image/png" href="/assets/cis-logo-black.png" />
   </head>
   <body>
     <header>
@@ -14,24 +16,98 @@
         <span id="account"></span><button id="logout" class="secondary">Log out</button>
       </div>
     </header>
-    <main>
+    <main class="analytics">
       <span class="eyebrow">SESSION EXPLORER</span>
       <h1>Session details</h1>
       <p>Replay the experience and explore the context behind each interaction.</p>
       <p id="feedback" role="status"></p>
-      <section class="card">
-        <h2>Recording information</h2>
-        <dl id="details"></dl>
-      </section>
-      <section class="card">
-        <h2>Session video</h2>
-        <p id="video-status" role="status">Checking video…</p>
-        <video id="session-video" controls playsinline preload="metadata" hidden></video>
-        <div class="actions">
-          <a id="download-video" class="button" hidden>Download MP4</a
-          ><button id="retry-video" class="secondary" hidden>Retry generation</button>
-        </div>
-      </section>
+      <nav class="session-tabs" role="tablist" aria-label="Session sections">
+        <button id="tab-details" role="tab" aria-controls="panel-details" aria-selected="true">
+          Details
+        </button>
+        <button
+          id="tab-replay"
+          role="tab"
+          aria-controls="panel-replay"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          Session replay
+        </button>
+        <button
+          id="tab-events"
+          role="tab"
+          aria-controls="panel-events"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          Event log
+        </button>
+      </nav>
+      <div id="panel-details" role="tabpanel" aria-labelledby="tab-details">
+        <div id="session-metrics" class="metric-grid" hidden></div>
+        <section class="card" id="journey-card" hidden>
+          <h2>Page journey</h2>
+          <ol id="journey" class="journey"></ol>
+        </section>
+
+        <section class="card">
+          <h2>Session information</h2>
+          <div id="details" class="evidence-details"></div>
+        </section>
+      </div>
+      <div id="panel-replay" role="tabpanel" aria-labelledby="tab-replay" hidden>
+        <section class="card">
+          <h2>Session replay</h2>
+          <p id="recording-summary"></p>
+          <label id="recording-label" hidden
+            >Recording
+            <select id="recording-select"></select
+          ></label>
+          <p id="video-status" role="status">Checking video…</p>
+          <p id="pending-capture" hidden></p>
+          <button id="recover-recording" class="secondary" hidden>Generate captured replay</button>
+          <video id="session-video" controls playsinline preload="metadata" hidden></video>
+          <div id="video-tools" class="video-tools" hidden>
+            <label
+              >Playback speed
+              <select id="speed">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="1.5">1.5×</option>
+                <option value="2">2×</option>
+              </select></label
+            >
+          </div>
+          <div class="actions">
+            <a id="download-video" class="button" hidden>Download video</a
+            ><button id="retry-video" class="secondary" hidden>Retry generation</button>
+          </div>
+        </section>
+      </div>
+      <div id="panel-events" role="tabpanel" aria-labelledby="tab-events" hidden>
+        <section id="timeline-card" class="card" hidden>
+          <div class="card-head">
+            <div>
+              <h2>Activity timeline</h2>
+              <p>Chronological semantic events · offsets from session start</p>
+            </div>
+            <label
+              >Event type
+              <select id="event-filter">
+                <option value="">All events</option>
+                <option value="click">Clicks</option>
+                <option value="scroll_milestone">Scrolls</option>
+                <option value="form">Forms</option>
+                <option value="navigation">Navigation</option>
+              </select></label
+            >
+          </div>
+          <p id="timeline-status" role="status"></p>
+          <ol id="timeline" class="timeline"></ol>
+          <button id="more-events" class="secondary" hidden>Load more events</button>
+        </section>
+      </div>
     </main>
   </body>
 </html>

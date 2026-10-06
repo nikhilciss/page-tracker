@@ -2,7 +2,7 @@ const master = location.pathname === '/master/admin/login';
 const signup = !master && new URLSearchParams(location.search).has('signup');
 const $ = (s) => document.querySelector(s);
 if (signup) {
-  document.title = 'Sign up · Page Tracker';
+  document.title = 'Sign up · CIS SessionLens';
   $('#heading').textContent = 'Create your account';
   $('#intro').textContent = 'Your website must return HTTP 200 to complete signup.';
   $('#signup-fields').hidden = false;
@@ -17,7 +17,7 @@ if (master) {
   $('#heading').textContent = 'Master administrator';
   $('#intro').textContent = 'Log in to manage company recordings.';
   $('#switch').hidden = true;
-  document.title = 'Master login · Page Tracker';
+  document.title = 'Master login · CIS SessionLens';
 }
 $('#login-form').addEventListener('submit', async (event) => {
   event.preventDefault();

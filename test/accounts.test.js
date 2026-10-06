@@ -114,3 +114,21 @@ test('accounts: signup, session cookies, tenant isolation, CSRF, logout and orig
   assert.equal((await post('/api/auth/logout', {}, rotated)).status, 200);
   assert.equal((await get('/api/auth/me', rotated)).status, 401);
 });
+
+test('authenticated API identity comes only from the session database account', async (t) => {
+  const f = await fixture();
+  t.after(() => f.close());
+  const headers = { Cookie: f.authCookie + '; name=Forged', 'X-Username': 'Forged' };
+  const first = await fetch(f.url + '/api/auth/me?name=Forged', { headers });
+  assert.equal(first.status, 200);
+  const original = (await first.json()).user;
+  const stored = f.accounts.get(original.id);
+  stored.name = '  Database Name  ';
+  const response = await fetch(f.url + '/api/auth/me?name=Forged', { headers });
+  const user = (await response.json()).user;
+  assert.equal(user.name, 'Database Name');
+  assert.equal(user.password_hash, undefined);
+  stored.name = '  ';
+  assert.equal((await fetch(f.url + '/api/auth/me', { headers })).status, 401);
+  assert.equal((await fetch(f.url + '/api/auth/me?name=Forged')).status, 401);
+});

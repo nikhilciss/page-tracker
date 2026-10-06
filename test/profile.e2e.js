@@ -38,7 +38,11 @@ test(
       document.querySelector('#connection-status').textContent.includes('Ready to record'),
     );
     assert.equal(await page.locator('#api-key').count(), 0);
-    assert.ok((await page.locator('#script-snippet').textContent()).includes('/tracker.js'));
+    assert.equal(
+      await page.locator('#script-snippet').textContent(),
+      '<script src="' + f.url + '/tracker.js" defer></script>',
+    );
+    assert.equal(await page.locator('#identity-snippet').count(), 0);
     await page.screenshot({ path: '/tmp/tracker-profile-desktop.png', fullPage: true });
     await page.setViewportSize({ width: 375, height: 812 });
     assert.equal(

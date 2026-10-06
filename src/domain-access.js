@@ -39,34 +39,57 @@ export async function verifyDomain(origin, token, method, localOrigins = []) {
   if (!addresses.length || (!local && addresses.some((a) => !publicIPv4(a.address))))
     throw new Error('Private network verification is blocked.');
   url.pathname = '/';
-  return new Promise((resolve, reject) => {
-    const request = (url.protocol === 'https:' ? https : http).get(
-      url,
-      {
-        lookup: (_host, options, callback) =>
-          callback(
-            null,
-            options.all ? [{ address: addresses[0].address, family: 4 }] : addresses[0].address,
-            4,
-          ),
-        agent: false,
-        headers: { Accept: 'text/plain' },
-      },
-      (response) => {
-        const available = response.statusCode === 200;
-        response.destroy();
-        resolve(available);
-      },
-    );
-    const timer = setTimeout(() => request.destroy(new Error('Verification timeout')), 5000);
-    request.on('close', () => clearTimeout(timer));
-    request.on('error', reject);
-  });
+  async function requestPage(target, redirects = 0) {
+    return new Promise((resolve, reject) => {
+      const request = (url.protocol === 'https:' ? https : http).get(
+        target,
+        {
+          lookup: (_host, options, callback) =>
+            callback(
+              null,
+              options.all ? [{ address: addresses[0].address, family: 4 }] : addresses[0].address,
+              4,
+            ),
+          agent: false,
+          headers: { Accept: 'text/plain' },
+        },
+        (response) => {
+          if (
+            [301, 302, 303, 307, 308].includes(response.statusCode) &&
+            response.headers.location &&
+            redirects < 3
+          ) {
+            let destination;
+            try {
+              destination = new URL(response.headers.location, target);
+            } catch {
+              response.destroy();
+              return resolve(false);
+            }
+            response.destroy();
+            if (destination.origin !== url.origin) return resolve(false);
+            return resolve(requestPage(destination, redirects + 1));
+          }
+          const available = response.statusCode === 200;
+          response.destroy();
+          resolve(available);
+        },
+      );
+      const timer = setTimeout(() => request.destroy(new Error('Verification timeout')), 5000);
+      request.on('close', () => clearTimeout(timer));
+      request.on('error', reject);
+    });
+  }
+  return requestPage(url);
 }
-export function domainAccess({ app, repository, requireLogin, csrf }) {
+export function domainAccess({ app, repository, requireLogin, csrf, config }) {
   app.get('/api/account/integration', requireLogin, csrf, async (req, res) => {
     if (req.account.is_master) return res.status(403).json({ error: 'Use a company account.' });
     const access = await repository.integration(req.account.id);
-    res.json({ origin: req.account.company_origin, verified: !!access?.domain_verified_at });
+    res.json({
+      origin: req.account.company_origin,
+      verified: !!access?.domain_verified_at,
+      recording_policy: config?.recordingPolicies?.[req.account.company_origin] || null,
+    });
   });
 }
